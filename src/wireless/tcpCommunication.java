@@ -30,6 +30,13 @@ public class tcpCommunication {
 	private boolean ifConected = true;
 	private int timeoutAttmps = 2;
 	private int timeouts = 0;
+	
+	
+	public static void main(String[] args) throws IOException {
+	 tcpCommunication Test = new tcpCommunication("192.168.1.2",80);
+	 String respond = Test.sendMessage("!MOD;CONFIG*");
+	 System.out.println(respond);
+	}
 
 	/**
 	 * Class for all things TCP!
