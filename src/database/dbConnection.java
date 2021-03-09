@@ -27,7 +27,7 @@ public class dbConnection {
 	 */
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		testConnection();
+		sendMySQL("SELECT * FROM Meters");
 	}
 	
 	
@@ -36,6 +36,86 @@ public class dbConnection {
 	 */
 	public static void updateIPs() {
 		
+	}
+	
+	/**
+	 * Executes mysql query on database and returns response
+	 * @param statement
+	 * @return
+	 */
+	public static ResultSet sendMySQL(String statement) {
+		Connection conn = null;
+        Statement stmt = null;
+        ResultSet rs = null;
+        ResultSet returnrs = null;
+        try {
+            //STEP 2: Register JDBC driver
+            Class.forName("org.mariadb.jdbc.Driver");
+
+            //STEP 3: Open a connection
+//            System.out.println("Connecting to a selected database...");
+            conn = DriverManager.getConnection(
+                    "jdbc:mariadb://"+ DB_IP + ":" + DB_PORT + "/" + Database, USER, PASS);
+//            System.out.println("Connected database successfully...");
+            stmt = conn.createStatement();
+            rs = stmt.executeQuery(statement);
+            returnrs = rs;
+            ResultSetMetaData rsmd = rs.getMetaData();
+            int columnsNumber = rsmd.getColumnCount();
+            while (rs.next()) {
+                for (int i = 1; i <= columnsNumber; i++) {
+                    if (i > 1) System.out.print(",  ");
+                    String columnValue = rs.getString(i);
+                    System.out.print(columnValue + " " + rsmd.getColumnName(i));
+                }
+                System.out.println("");
+            }
+            
+        } catch (SQLException se) {
+            //Handle errors for JDBC
+            se.printStackTrace();
+            return null;
+        } catch (Exception e) {
+            //Handle errors for Class.forName
+            e.printStackTrace();
+            return null;
+        } finally {
+            //finally block used to close resources
+            try {
+                if (stmt != null) {
+                    conn.close();
+                }
+            } catch (SQLException se) {
+            	return null;
+            }// do nothing
+            try {
+                if (conn != null) {
+                    conn.close();
+                }
+            } catch (SQLException se) {
+                se.printStackTrace();
+            }
+            if (rs != null) {
+                try {
+                    rs.close();
+                } catch (SQLException sqlEx) { } // ignore
+
+                rs = null;
+            }
+
+            if (stmt != null) {
+                try {
+                    stmt.close();
+                } catch (SQLException sqlEx) { } // ignore
+
+                stmt = null;
+            }
+            
+            //end finally try
+        }//end try
+//        System.out.println("Goodbye!"); 
+		
+		return returnrs;
 	}
 	
 	

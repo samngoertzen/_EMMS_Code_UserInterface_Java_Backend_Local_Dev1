@@ -29,16 +29,26 @@ public class Client
 
 		
 		// this waits to see if the preset print comes in for error control
-		
+//		System.out.println("Attempting to connect");
 		String inputLine = attemptConnect();
+//		System.out.println("Good!");
+//		try {
+////			TimeUnit.SECONDS.sleep(1);
+//		} catch (InterruptedException e1) {
+//			// TODO Auto-generated catch block
+//			e1.printStackTrace();
+//		}
+		
+//		System.out.println("sending real message");
+		String response = "NODev";
 		try {
-			sendMessage(command);
+			response = sendMessage(command);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			return timeOut ;
 		}
 		
-		inputLine = attemptConnect();
+//		inputLine = attemptConnect();
 		
 //		System.out.println(inputLine + " Got this");
 		
@@ -59,17 +69,19 @@ public class Client
 			return timeOut;
 		}
 		
-		return inputLine;
+		return response;
 	} 
 
 	private String sendMessage(String msg) throws IOException {
 		out.println(msg);
-		out.println("+++");
+//		out.println("+++");
 		String line = "";
 		while ((line = in.readLine()) != null) {
+			System.out.println("Got: " + line);
 			break;
 		}
 //		System.out.println(line);
+//		System.out.println("returning...");
 		return line;
 	}
 
@@ -95,6 +107,7 @@ public class Client
 	private String connSucc() throws IOException {
 		String line = "";
 		while ((line = in.readLine()) != null) {
+//			System.out.println("Got: " + line);
 			break;
 		}
 		return line;
