@@ -53,6 +53,9 @@ public class Meter {
 
 	}
 	
+	
+	// LIVE DEMOS ARE DIFFICULT
+	
 	/**
 	 * Make a new instance of a Meter
 	 * @param ip Ip Address of the Meter
