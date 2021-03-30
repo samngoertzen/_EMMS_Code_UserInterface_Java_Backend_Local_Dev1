@@ -145,6 +145,7 @@ public class dbConnection {
             return false;
         } finally {
             //finally block used to close resources
+        	//BENNETT YOU ARE AWESOME ALSO THIS COMMENT IS FOR GITHUB TESTING DELETE MEEEE
             try {
                 if (stmt != null) {
                     conn.close();
