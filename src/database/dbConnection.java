@@ -4,6 +4,8 @@
 package database;
 
 import java.sql.*;
+import meter.InfoGET;
+import meter.InfoSET;
 
 /**
  * @author ZacheryHolsinger
@@ -19,7 +21,7 @@ public class dbConnection {
     // Profile settings from /var/www/html/index.php
     static final String USER = "emmsdev";
     static final String PASS = "pumpkin";
-    static final String Database = "EMMS";
+    static final String DATABASE = "EMMS";
     
     
 	/**
@@ -27,7 +29,7 @@ public class dbConnection {
 	 */
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		sendMySQL("SELECT * FROM Meters");
+		getFrom(InfoGET.ENERGY_USED, null);
 	}
 	
 	
@@ -117,6 +119,16 @@ public class dbConnection {
 		
 		return returnrs;
 	}
+
+    /**
+     * Constructs a MySQL statement for fetching a specific datum and grabs it from the database.
+     * @author Bennett Andrews
+     * @return 
+     */
+    public static ResultSet getFrom(InfoGET field, String IP) {
+        String statement = "SELECT " + field + " FROM " + DATABASE + " WHERE (IP ='" + IP + "')";
+        return sendMySQL(statement);
+    }
 	
 	
 	/**
@@ -145,6 +157,7 @@ public class dbConnection {
             return false;
         } finally {
             //finally block used to close resources
+        	//BENNETT YOU ARE AWESOME ALSO THIS COMMENT IS FOR GITHUB TESTING DELETE MEEEE
             try {
                 if (stmt != null) {
                     conn.close();
