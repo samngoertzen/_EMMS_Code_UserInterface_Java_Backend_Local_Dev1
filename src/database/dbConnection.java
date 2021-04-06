@@ -13,7 +13,7 @@ public class dbConnection {
 	
 	// Driver settings
 	static final String JDBC_DRIVER = "org.mariadb.jdbc.Driver";
-    static final String DB_IP = "153.42.34.33";
+    static final String DB_IP = "153.42.35.209";
     static final String DB_PORT = "3306";
     
     // Profile settings from /var/www/html/index.php
