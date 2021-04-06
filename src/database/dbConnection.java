@@ -4,8 +4,6 @@
 package database;
 
 import java.sql.*;
-import meter.InfoGET;
-import meter.InfoSET;
 
 /**
  * @author ZacheryHolsinger
@@ -15,13 +13,13 @@ public class dbConnection {
 	
 	// Driver settings
 	static final String JDBC_DRIVER = "org.mariadb.jdbc.Driver";
-    static final String DB_IP = "153.42.34.33";
+    static final String DB_IP = "153.42.35.209";
     static final String DB_PORT = "3306";
     
     // Profile settings from /var/www/html/index.php
     static final String USER = "emmsdev";
     static final String PASS = "pumpkin";
-    static final String DATABASE = "EMMS";
+    static final String Database = "EMMS";
     
     
 	/**
@@ -29,7 +27,7 @@ public class dbConnection {
 	 */
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		getFrom(InfoGET.ENERGY_USED, null);
+		sendMySQL("SELECT * FROM Meters");
 	}
 	
 	
@@ -119,16 +117,6 @@ public class dbConnection {
 		
 		return returnrs;
 	}
-
-    /**
-     * Constructs a MySQL statement for fetching a specific datum and grabs it from the database.
-     * @author Bennett Andrews
-     * @return 
-     */
-    public static ResultSet getFrom(InfoGET field, String IP) {
-        String statement = "SELECT " + field + " FROM " + DATABASE + " WHERE (IP ='" + IP + "')";
-        return sendMySQL(statement);
-    }
 	
 	
 	/**
