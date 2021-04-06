@@ -4,6 +4,7 @@
 package database;
 
 import java.sql.*;
+import meter.InfoGET;
 
 /**
  * @author ZacheryHolsinger
@@ -27,8 +28,81 @@ public class dbConnection {
 	 */
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		sendMySQL("SELECT * FROM Meters");
+		//sendMySQL("SELECT * FROM Meters");
+        getFrom(InfoGET.EMERGENCYBUTTON, "AB:CD:EF:gH");
 	}
+
+    /**
+     * Converts the InfoGET enum to string field in the database
+     * @author Bennett Andrews
+     * @param field - Type InfoGET
+     * @return String
+     */
+    public static String fieldFromInfoGET(InfoGET field) {
+
+        switch (field) {
+
+            case ALARM:
+                return "";
+
+            case CB_VERSION:
+                return "";
+            
+            case DEBUG:
+                return "";
+
+            case EMERGENCYBUTTON:
+                return "Emergency_button_state";
+
+            case ENERGYALLOCATION:
+                return "";
+
+            case IP:
+                return "";
+            
+            case LIGHTS:
+                return "";
+            
+            case MAC:
+                return "MAC";
+
+            case PASSWORD:
+                return "";
+            
+            case POWERDATA:
+                return "";
+
+            case POWERFAIL:
+                return "";
+
+            case RELAY:
+                return "";
+
+            case RESET_TIME:
+                return "";
+            
+            case SSID:
+                return "";
+
+            case TIME:
+                return "";
+
+            default:
+                return "";
+        }
+    }
+
+
+    /**
+     * Constructs a MySQL statement for fetching a specific datum and grabs it from the database.
+     * @author Bennett Andrews
+     * @return 
+     */
+    public static ResultSet getFrom(InfoGET field, String MAC) {
+        String sfield = fieldFromInfoGET(field);
+        String statement = "SELECT " + sfield + " FROM " + "Meters" + " WHERE (MAC ='" + MAC + "')";
+        return sendMySQL(statement);
+    }
 	
 	
 	/**
