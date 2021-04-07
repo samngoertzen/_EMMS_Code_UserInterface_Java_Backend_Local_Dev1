@@ -37,56 +37,63 @@ public class dbConnection {
      * @author Bennett Andrews
      * @param field - Type InfoGET
      * @return String
+     * @throws Exception
      */
     public static String fieldFromInfoGET(InfoGET field) {
 
         switch (field) {
 
             case ALARM:
-                return "";
+                return "Alarm";
 
             case CB_VERSION:
-                return "";
+                return "CB_version";
             
             case DEBUG:
-                return "";
+                return "Debug";
 
             case EMERGENCYBUTTON:
                 return "Emergency_button_state";
 
             case ENERGYALLOCATION:
-                return "";
+                return "Total_allotment";
+
+            case ENERGY_USED:
+                return "Used_energy";
 
             case IP:
-                return "";
+                return "IP_addr";
             
             case LIGHTS:
-                return "";
+                return "Lights";
             
             case MAC:
                 return "MAC";
 
             case PASSWORD:
-                return "";
+                return "Password";
             
             case POWERDATA:
                 return "";
 
             case POWERFAIL:
-                return "";
+                return "Last_power_fail";
 
             case RELAY:
                 return "";
+            
+            case RESET:
+                return "";
 
             case RESET_TIME:
-                return "";
+                return "Reset_time";
             
             case SSID:
-                return "";
+                return "Meter_id";
 
             case TIME:
                 return "";
-
+            
             default:
                 return "";
         }
