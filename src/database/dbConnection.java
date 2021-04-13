@@ -67,6 +67,7 @@ public class dbConnection {
                     if (i > 1) System.out.print(",  ");
                     String columnValue = rs.getString(i);
                     System.out.print(columnValue + " " + rsmd.getColumnName(i));
+                    
                 }
                 System.out.println("");
             }
