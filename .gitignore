@@ -2,3 +2,4 @@
 .vscode/settings.json
 bin/database/dbConnection.class
 *.class
+*.class

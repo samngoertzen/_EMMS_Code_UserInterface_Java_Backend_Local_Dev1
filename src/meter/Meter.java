@@ -15,7 +15,7 @@ import wireless.Client;
  */
 public class Meter {
 
-	private static final char CHANGE_INDICATOR = 'Δ'; // character appended to beginning of data when
+	private static final char CHANGE_INDICATOR = '~'; // character appended to beginning of data when
 													  // the data is updated from the meters but has
 													  // not been pushed to the database yet.
 
@@ -49,8 +49,24 @@ public class Meter {
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 		try {
+			// Create a new meter
 			Meter Test = new Meter("192.168.1.2");
-			Test.updateMeter(InfoSET.RELAY, "OFf");
+
+			// set some default values for testing
+			Test.MAC = "n:cheese";
+			Test.EMERGENCYBUTTON = "~0";
+
+			// test updateMeter function
+			Test.updateMeter();
+
+			// Test setting a value to the database
+			boolean isSet = dbConnection.setTo("0", InfoSET.EMERGENCYBUTTON, "n:cheese");
+			System.out.println("Set test worked? >" + isSet);
+
+			// Test getting a value from the database
+			String[] get = dbConnection.getFrom(InfoGET.EMERGENCYBUTTON, "n:cheese");
+			System.out.println("Get Test: " + Arrays.toString(get));
+
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -69,7 +85,7 @@ public class Meter {
 	public Meter(String ip) throws Exception {
 		// First thing we do is check and see if the meter is on the network
 		IP = ip;
-		getWifiInfo();
+		//getWifiInfo();
 	}
 	
 /////////// Begin Code that Pushes information Java-->DB  ////////////
@@ -93,15 +109,21 @@ public class Meter {
 		return !(CHANGE_INDICATOR == datum.charAt(0));
 	}
 
+
+
+
 	/**
 	 * Updates a meter for the database
 	 * @param data
 	 * @param value
 	 * @return
 	 */
-	public boolean updateMeter(InfoSET data, String value) {
+	public boolean updateMeter() {
 		// the first thing to is to see if the meter exists!
-		boolean meterInSystem = checkIfNewMeter(this.MAC);
+		boolean meterInSystem = dbConnection.isMeterInDB(this.MAC);
+
+		System.out.println("Is meter in system? >" + meterInSystem);
+
 		if(!meterInSystem) {
 			addMeterInDB();
 		}
@@ -109,13 +131,13 @@ public class Meter {
 		// Update Emergency_button_state
 		if (!isDatumUpdated(EMERGENCYBUTTON)) {
 			try {
-				dbConnection.setTo(EMERGENCYBUTTON, InfoSET.EMERGENCYBUTTON, MAC);
-				EMERGENCYBUTTON = EMERGENCYBUTTON.substring(1);
-				System.out.println("Emergencybutton substring test: " + EMERGENCYBUTTON);
-			} catch {
+				String strippedData = EMERGENCYBUTTON.substring(1);
+				dbConnection.setTo(strippedData, InfoSET.EMERGENCYBUTTON, MAC);
+				EMERGENCYBUTTON = strippedData;
+
+			} catch (Exception e) {
 				// What if data update fails?
 			}
-			
 		}
 		
 		return false; // TODO make it return only true when sucessfull update!
@@ -126,12 +148,6 @@ public class Meter {
 	 */
 	private boolean addMeterInDB() {
 		
-		
-		return false; //TODO finish this stub
-	}
-
-	public boolean checkIfNewMeter(String MAC) {
-		dbConnection.sendMySQL("SELECT Meters FROM EMMS");
 		return false; //TODO finish this stub
 	}
 	

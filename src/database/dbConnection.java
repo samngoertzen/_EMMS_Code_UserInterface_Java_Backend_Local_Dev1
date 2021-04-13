@@ -4,6 +4,8 @@
 package database;
 
 import java.sql.*;
+import java.util.Arrays;
+
 import meter.InfoGET;
 import meter.InfoSET;
 
@@ -30,8 +32,8 @@ public class dbConnection {
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 		//sendMySQL("SELECT * FROM Meters");
-        getFrom(InfoGET.EMERGENCYBUTTON, "AB:CD:EF:gH");
-        setTo("0", InfoSET.EMERGENCYBUTTON, "AB:CD:EF:gH");
+        getFrom(InfoGET.EMERGENCYBUTTON, "n:cheese");
+        setTo("0", InfoSET.EMERGENCYBUTTON, "n:cheese");
 	}
 
     /**
@@ -147,7 +149,7 @@ public class dbConnection {
                 return "Last_power_fail";
 
             case RELAY:
-                return "";
+                return "Reset";
             
             case RESET:
                 return "";
@@ -172,12 +174,18 @@ public class dbConnection {
      * @param value - The desired string literal value. 
      * @param field - InfoSET value to be modified.
      * @param mac - The MAC address of the desired meter in String format.
-     * @return The return is a ResultSet.
+     * @return The return is a boolean true if the set worked, false if an error occured.
      */
-    public static ResultSet setTo(String value, InfoSET field, String mac) {
+    public static boolean setTo(String value, InfoSET field, String mac) {
         String sfield = columnFromInfoSET(field);
         String statement = "UPDATE Meters SET " + sfield + " = '" + value + "' WHERE (MAC='" + mac + "')";
-        return sendMySQL(statement);
+        try {
+            sendMySQL(statement);
+            return true;
+        } catch (Exception e) {
+            // SQL failure
+            return false;
+        }
     }
 
     /**
@@ -187,13 +195,27 @@ public class dbConnection {
      * @param mac - The MAC address of the desired meter in String format.
      * @return The return is a ResultSet.
      */
-    public static ResultSet getFrom(InfoGET field, String mac) {
+    public static String[] getFrom(InfoGET field, String mac) {
         String sfield = columnFromInfoGET(field);
-        String statement = "SELECT " + sfield + " FROM " + "Meters" + " WHERE (MAC ='" + mac + "')";
+        String statement = "SELECT " + sfield + " FROM Meters" + " WHERE (MAC ='" + mac + "')";
         return sendMySQL(statement);
     }
 	
-	
+    /** 
+     * An abstraction for verifying that a meter exists in the database. 
+     * @author Bennett Andrews
+     * @param mac - Desired meter MAC as a string.
+     * @return true/false - Meter is in the database already/Meter is not in the database.
+     */
+
+     public static boolean isMeterInDB(String mac) {
+        String statement = "SELECT EXISTS (SELECT * FROM Meters WHERE(MAC='" + mac + "'))";
+        String[] resultSet = sendMySQL(statement); //Note: this returns exactly one cell with 0 or 1.
+
+        return (resultSet[0].equals("1")); 
+
+     }
+     
 	/**
 	 * Talks to Meters table in the database and gets all the meter ips!
 	 */
@@ -206,11 +228,14 @@ public class dbConnection {
 	 * @param statement
 	 * @return
 	 */
-	public static ResultSet sendMySQL(String statement) {
+	public static String[] sendMySQL(String statement) {
 		Connection conn = null;
         Statement stmt = null;
         ResultSet rs = null;
         ResultSet returnrs = null;
+
+        String[] resultString;
+
         try {
             //STEP 2: Register JDBC driver
             Class.forName(JDBC_DRIVER);
@@ -225,13 +250,15 @@ public class dbConnection {
             returnrs = rs;
             ResultSetMetaData rsmd = rs.getMetaData();
             int columnsNumber = rsmd.getColumnCount();
+            resultString = new String[columnsNumber];
             while (rs.next()) {
                 for (int i = 1; i <= columnsNumber; i++) {
                     if (i > 1) System.out.print(",  ");
                     String columnValue = rs.getString(i);
-                    System.out.print(columnValue + " " + rsmd.getColumnName(i));
+                    resultString[i-1] = columnValue;
+//                    System.out.print(columnValue + " " + rsmd.getColumnName(i));
                 }
-                System.out.println("");
+//                System.out.println("");
             }
             
         } catch (SQLException se) {
@@ -278,7 +305,7 @@ public class dbConnection {
         }//end try
 //        System.out.println("Goodbye!"); 
 		
-		return returnrs;
+		return resultString;
 	}
 	
 	
