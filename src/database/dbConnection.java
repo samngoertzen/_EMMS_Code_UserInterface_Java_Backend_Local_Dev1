@@ -4,6 +4,8 @@
 package database;
 
 import java.sql.*;
+import meter.InfoGET;
+import meter.InfoSET;
 
 /**
  * @author ZacheryHolsinger
@@ -19,7 +21,7 @@ public class dbConnection {
     // Profile settings from /var/www/html/index.php
     static final String USER = "emmsdev";
     static final String PASS = "pumpkin";
-    static final String Database = "EMMS";
+    static final String DATABASE = "EMMS";
     
     
 	/**
@@ -27,8 +29,169 @@ public class dbConnection {
 	 */
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		sendMySQL("SELECT * FROM Meters");
+		//sendMySQL("SELECT * FROM Meters");
+        getFrom(InfoGET.EMERGENCYBUTTON, "AB:CD:EF:gH");
+        setTo("0", InfoSET.EMERGENCYBUTTON, "AB:CD:EF:gH");
 	}
+
+    /**
+     * Converts the InfoGET enum to string column name in the database.
+     * @author Bennett Andrews
+     * @param field - InfoGET value to be converted.
+     * @return Database column of type "String"
+     */
+    public static String columnFromInfoGET(InfoGET field) {
+
+        switch (field) {
+
+            case ALARM:
+                return "Alarm";
+
+            case CB_VERSION:
+                return "CB_version";
+            
+            case DEBUG:
+                return "Debug";
+
+            case EMERGENCYBUTTON:
+                return "Emergency_button_state";
+
+            case ENERGYALLOCATION:
+                return "Total_allotment";
+
+            case ENERGY_USED:
+                return "Used_energy";
+
+            case IP:
+                return "IP_addr";
+            
+            case LIGHTS:
+                return "Lights";
+            
+            case MAC:
+                return "MAC";
+
+            case PASSWORD:
+                return "Password";
+            
+            case POWERDATA:
+                return "";
+
+            case POWERFAIL:
+                return "Last_power_fail";
+
+            case RELAY:
+                return "Reset";
+            
+            case RESET:
+                return "";
+
+            case RESET_TIME:
+                return "Reset_time";
+            
+            case SSID:
+                return "Meter_id";
+
+            case TIME:
+                return "Time";
+            
+            default:
+                return "";
+        }
+    }
+
+    /**
+     * Converts the InfoSET enum to string column name in the database.
+     * @author Bennett Andrews
+     * @param field - InfoSET value to be converted.
+     * @return Database column of type "String"
+     */
+    public static String columnFromInfoSET(InfoSET field) {
+
+        switch (field) {
+
+            case ALARM:
+                return "Alarm";
+
+            case CB_VERSION:
+                return "CB_version";
+            
+            case DEBUG:
+                return "Debug";
+
+            case EMERGENCYBUTTON:
+                return "Emergency_button_state";
+
+            case ENERGYALLOCATION:
+                return "Total_allotment";
+
+            case ENERGY_USED:
+                return "Used_energy";
+
+            case IP:
+                return "IP_addr";
+            
+            case LIGHTS:
+                return "Lights";
+            
+            case MAC:
+                return "MAC";
+
+            case PASSWORD:
+                return "Password";
+            
+            case POWERDATA:
+                return "";
+
+            case POWERFAIL:
+                return "Last_power_fail";
+
+            case RELAY:
+                return "";
+            
+            case RESET:
+                return "";
+
+            case RESET_TIME:
+                return "Reset_time";
+            
+            case SSID:
+                return "Meter_id";
+
+            case TIME:
+                return "Time";
+            
+            default:
+                return "";
+        }
+    }
+
+    /**
+     * An abstraction for setting information to the database.
+     * @author Bennett Andrews
+     * @param value - The desired string literal value. 
+     * @param field - InfoSET value to be modified.
+     * @param mac - The MAC address of the desired meter in String format.
+     * @return The return is a ResultSet.
+     */
+    public static ResultSet setTo(String value, InfoSET field, String mac) {
+        String sfield = columnFromInfoSET(field);
+        String statement = "UPDATE Meters SET " + sfield + " = '" + value + "' WHERE (MAC='" + mac + "')";
+        return sendMySQL(statement);
+    }
+
+    /**
+     * An abstraction for getting information from the database.
+     * @author Bennett Andrews
+     * @param field - InfoGET value to be fetched
+     * @param mac - The MAC address of the desired meter in String format.
+     * @return The return is a ResultSet.
+     */
+    public static ResultSet getFrom(InfoGET field, String mac) {
+        String sfield = columnFromInfoGET(field);
+        String statement = "SELECT " + sfield + " FROM " + "Meters" + " WHERE (MAC ='" + mac + "')";
+        return sendMySQL(statement);
+    }
 	
 	
 	/**
@@ -50,12 +213,12 @@ public class dbConnection {
         ResultSet returnrs = null;
         try {
             //STEP 2: Register JDBC driver
-            Class.forName("org.mariadb.jdbc.Driver");
+            Class.forName(JDBC_DRIVER);
 
             //STEP 3: Open a connection
 //            System.out.println("Connecting to a selected database...");
             conn = DriverManager.getConnection(
-                    "jdbc:mariadb://"+ DB_IP + ":" + DB_PORT + "/" + Database, USER, PASS);
+                    "jdbc:mariadb://"+ DB_IP + ":" + DB_PORT + "/" + DATABASE, USER, PASS);
 //            System.out.println("Connected database successfully...");
             stmt = conn.createStatement();
             rs = stmt.executeQuery(statement);
@@ -67,7 +230,6 @@ public class dbConnection {
                     if (i > 1) System.out.print(",  ");
                     String columnValue = rs.getString(i);
                     System.out.print(columnValue + " " + rsmd.getColumnName(i));
-                    
                 }
                 System.out.println("");
             }
@@ -129,12 +291,12 @@ public class dbConnection {
         Statement stmt = null;
         try {
             //STEP 2: Register JDBC driver
-            Class.forName("org.mariadb.jdbc.Driver");
+            Class.forName(JDBC_DRIVER);
 
             //STEP 3: Open a connection
             System.out.println("Connecting to a selected database...");
             conn = DriverManager.getConnection(
-                    "jdbc:mariadb://"+ DB_IP + ":" + DB_PORT + "/" + Database, USER, PASS);
+                    "jdbc:mariadb://"+ DB_IP + ":" + DB_PORT + "/" + DATABASE, USER, PASS);
             System.out.println("Connected database successfully...");
         } catch (SQLException se) {
             //Handle errors for JDBC

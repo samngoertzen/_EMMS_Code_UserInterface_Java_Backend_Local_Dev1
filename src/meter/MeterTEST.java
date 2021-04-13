@@ -3,7 +3,6 @@
  */
 package meter;
 
-import database.dbConnection;
 import wireless.Client;
 
 /**
@@ -32,7 +31,6 @@ public class MeterTEST {
 	String POWERFAIL = "4/5/60";
 	String POWERDATA = "50";
 	// Dummy variables /// END ///
-	
 
 	/**
 	 * @param args
@@ -41,6 +39,7 @@ public class MeterTEST {
 	 */
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
+//		Meter Test = new Meter("192.168.1.2");
 
 	}
 	
