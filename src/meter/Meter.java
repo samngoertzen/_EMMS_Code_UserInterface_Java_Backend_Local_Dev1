@@ -14,6 +14,11 @@ import wireless.Client;
  *
  */
 public class Meter {
+
+	private static final char CHANGE_INDICATOR = 'Δ'; // character appended to beginning of data when
+													  // the data is updated from the meters but has
+													  // not been pushed to the database yet.
+
 	Boolean SetupComplete = false; // flips to true once initialized and the startup information is gathered.
 	
 	// Information from the meter /// BEGIN ///
@@ -45,7 +50,7 @@ public class Meter {
 		// TODO Auto-generated method stub
 		try {
 			Meter Test = new Meter("192.168.1.2");
-			Test.upDateMeter(InfoSET.RELAY, "OFf");
+			Test.updateMeter(InfoSET.RELAY, "OFf");
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -79,18 +84,39 @@ public class Meter {
 	}
 	
 	/**
-	 * Updates a value for the database
+	 * Tests to see if a meter variable has been updated in the database or not.
+	 * @author Bennett Andrews
+	 * @param datum - String literal of the testing variable.
+	 * @return true/false  - The variable is updated/The variable has not been updated.
+	 */
+	public static boolean isDatumUpdated(String datum) {
+		return !(CHANGE_INDICATOR == datum.charAt(0));
+	}
+
+	/**
+	 * Updates a meter for the database
 	 * @param data
 	 * @param value
 	 * @return
 	 */
-	public boolean upDateMeter(InfoSET data, String value) {
+	public boolean updateMeter(InfoSET data, String value) {
 		// the first thing to is to see if the meter exists!
 		boolean meterInSystem = checkIfNewMeter(this.MAC);
 		if(!meterInSystem) {
 			addMeterInDB();
 		}
 		
+		// Update Emergency_button_state
+		if (!isDatumUpdated(EMERGENCYBUTTON)) {
+			try {
+				dbConnection.setTo(EMERGENCYBUTTON, InfoSET.EMERGENCYBUTTON, MAC);
+				EMERGENCYBUTTON = EMERGENCYBUTTON.substring(1);
+				System.out.println("Emergencybutton substring test: " + EMERGENCYBUTTON);
+			} catch {
+				// What if data update fails?
+			}
+			
+		}
 		
 		return false; // TODO make it return only true when sucessfull update!
 	}
