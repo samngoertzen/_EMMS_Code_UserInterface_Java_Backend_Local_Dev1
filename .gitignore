@@ -2,4 +2,8 @@
 .vscode/settings.json
 bin/database/dbConnection.class
 *.class
-*.class
+bin/
+bin/meter/Meter.class
+bin/meter/InfoGET.class
+bin/meter/InfoSET.class
+

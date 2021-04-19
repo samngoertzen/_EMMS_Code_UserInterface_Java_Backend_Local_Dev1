@@ -53,19 +53,19 @@ public class Meter {
 			Meter Test = new Meter("192.168.1.2");
 
 			// set some default values for testing
+			Test.TIME = "~00:00";
 			Test.MAC = "n:cheese";
-			Test.EMERGENCYBUTTON = "~0";
 
 			// test updateMeter function
 			Test.updateMeter();
 
-			// Test setting a value to the database
-			boolean isSet = dbConnection.setTo("0", InfoSET.EMERGENCYBUTTON, "n:cheese");
-			System.out.println("Set test worked? >" + isSet);
+			// // Test setting a value to the database
+			// boolean isSet = dbConnection.setTo("0", InfoSET.EMERGENCYBUTTON, "n:cheese");
+			// System.out.println("Set test worked? >" + isSet);
 
-			// Test getting a value from the database
-			String[] get = dbConnection.getFrom(InfoGET.EMERGENCYBUTTON, "n:cheese");
-			System.out.println("Get Test: " + Arrays.toString(get));
+			// // Test getting a value from the database
+			// String[] get = dbConnection.getFrom(InfoGET.EMERGENCYBUTTON, "n:cheese");
+			// System.out.println("Get Test: " + Arrays.toString(get));
 
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
@@ -106,11 +106,17 @@ public class Meter {
 	 * @return true/false  - The variable is updated/The variable has not been updated.
 	 */
 	public static boolean isDatumUpdated(String datum) {
-		return !(CHANGE_INDICATOR == datum.charAt(0));
+
+		char firstChar;
+		try {
+			firstChar = datum.charAt(0);
+		} catch (StringIndexOutOfBoundsException e) {
+			System.out.println("Null datum");
+			return true;
+		}
+
+		return CHANGE_INDICATOR != firstChar;
 	}
-
-
-
 
 	/**
 	 * Updates a meter for the database
@@ -118,7 +124,7 @@ public class Meter {
 	 * @param value
 	 * @return
 	 */
-	public boolean updateMeter() {
+	public void updateMeter() {
 		// the first thing to is to see if the meter exists!
 		boolean meterInSystem = dbConnection.isMeterInDB(this.MAC);
 
@@ -127,27 +133,363 @@ public class Meter {
 		if(!meterInSystem) {
 			addMeterInDB();
 		}
+
+		updateALARM();
+		updateCBV();
+		updateDEBUG();
+		updateEB();
+		updateEA();
+		updateEU();
+		updateIP();
+		updateLIGHTS();
+		updatePSWD();
+		updatePF();
+		updateRELAY();
+		updateRSTT();
+		updateSSID();
+		updateTIME();
 		
-		// Update Emergency_button_state
+	}
+
+
+
+
+
+
+	/**
+	 * Updates the ALARM value to the database
+	 * @return true/false - Update successful/update unsuccessful
+	 */
+	public boolean updateALARM() {
+
+		if (!isDatumUpdated(ALARM)) {
+			try {
+				String strippedData = ALARM.substring(1);
+				dbConnection.setTo(strippedData, InfoSET.ALARM, MAC);
+				ALARM = strippedData;
+
+				return true;
+
+			} catch (Exception e) {
+				// What if data update fails?
+				System.out.println("ALARM - false");
+				return false;
+			}
+		}
+		return true;
+	}
+
+	/**
+	 * Updates the CB_VERSION value to the database
+	 * @return true/false - Update successful/update unsuccessful
+	 */
+	public boolean updateCBV() {
+
+		if (!isDatumUpdated(CB_VERSION)) {
+			try {
+				String strippedData = CB_VERSION.substring(1);
+				dbConnection.setTo(strippedData, InfoSET.CB_VERSION, MAC);
+				CB_VERSION = strippedData;
+
+				return true;
+
+			} catch (Exception e) {
+				// What if data update fails?
+				System.out.println("CB_VERSION - false");
+				return false;
+			}
+		}
+		return true;
+	}
+
+	/**
+	 * Updates the DEBUG value to the database
+	 * @return true/false - Update successful/update unsuccessful
+	 */
+	public boolean updateDEBUG() {
+
+		if (!isDatumUpdated(DEBUG)) {
+			try {
+				String strippedData = DEBUG.substring(1);
+				dbConnection.setTo(strippedData, InfoSET.DEBUG, MAC);
+				DEBUG = strippedData;
+
+				return true;
+
+			} catch (Exception e) {
+				// What if data update fails?
+				System.out.println("DEBUG - false");
+				return false;
+			}
+		}
+		return true;
+	}
+
+	/**
+	 * Updates the EMERGENCYBUTTON value to the database
+	 * @return true/false - Update successful/update unsuccessful
+	 */
+	 public boolean updateEB() {
+
 		if (!isDatumUpdated(EMERGENCYBUTTON)) {
 			try {
 				String strippedData = EMERGENCYBUTTON.substring(1);
 				dbConnection.setTo(strippedData, InfoSET.EMERGENCYBUTTON, MAC);
 				EMERGENCYBUTTON = strippedData;
 
+				return true;
+
 			} catch (Exception e) {
 				// What if data update fails?
+				System.out.println("EMERGENCYBUTTON - false");
+				return false;
 			}
 		}
-		
-		return false; // TODO make it return only true when sucessfull update!
+		return true;
 	}
+
+	/**
+	 * Updates the ENERGYALLOCATION value to the database
+	 * @return true/false - Update successful/update unsuccessful
+	 */
+	public boolean updateEA() {
+
+		if (!isDatumUpdated(ENERGY_USED)) {
+			try {
+				String strippedData = ENERGYALLOCATION.substring(1);
+				dbConnection.setTo(strippedData, InfoSET.ENERGYALLOCATION, MAC);
+				ENERGYALLOCATION = strippedData;
+
+				return true;
+
+			} catch (Exception e) {
+				// What if data update fails?
+				System.out.println("ENERGYALLOCATION - false");
+				return false;
+			}
+		}
+		return true;
+	}
+
+	/**
+	 * Updates the ENERGY_USED value to the database
+	 * @return true/false - Update successful/update unsuccessful
+	 */
+	public boolean updateEU() {
+
+		if (!isDatumUpdated(ENERGY_USED)) {
+			try {
+				String strippedData = ENERGY_USED.substring(1);
+				dbConnection.setTo(strippedData, InfoSET.ENERGY_USED, MAC);
+				ENERGY_USED = strippedData;
+
+				return true;
+
+			} catch (Exception e) {
+				// What if data update fails?
+				System.out.println("ENERGY_USED - false");
+				return false;
+			}
+		}
+		return true;
+	}
+
+	/**
+	 * Updates the IP value to the database
+	 * @return true/false - Update successful/update unsuccessful
+	 */
+	public boolean updateIP() {
+
+		if (!isDatumUpdated(IP)) {
+			try {
+				String strippedData = IP.substring(1);
+				dbConnection.setTo(strippedData, InfoSET.IP, MAC);
+				IP = strippedData;
+
+				return true;
+
+			} catch (Exception e) {
+				// What if data update fails?
+				System.out.println("IP - false");
+				return false;
+			}
+		}
+		return true;
+	}
+
+	/**
+	 * Updates the LIGHTS value to the database
+	 * @return true/false - Update successful/update unsuccessful
+	 */
+	public boolean updateLIGHTS() {
+
+		if (!isDatumUpdated(LIGHTS)) {
+			try {
+				String strippedData = LIGHTS.substring(1);
+				dbConnection.setTo(strippedData, InfoSET.LIGHTS, MAC);
+				LIGHTS = strippedData;
+
+				return true;
+
+			} catch (Exception e) {
+				// What if data update fails?
+				System.out.println("LIGHTS - false");
+				return false;
+			}
+		}
+		return true;
+	}
+
+	/**
+	 * Updates the PASSWORD value to the database
+	 * @return true/false - Update successful/update unsuccessful
+	 */
+	public boolean updatePSWD() {
+
+		if (!isDatumUpdated(PASSWORD)) {
+			try {
+				String strippedData = PASSWORD.substring(1);
+				dbConnection.setTo(strippedData, InfoSET.PASSWORD, MAC);
+				PASSWORD = strippedData;
+
+				return true;
+
+			} catch (Exception e) {
+				// What if data update fails?
+				System.out.println("PASSWORD - false");
+				return false;
+			}
+		}
+		return true;
+	}
+
+	/**
+	 * Updates the POWERFAIL value to the database
+	 * @return true/false - Update successful/update unsuccessful
+	 */
+	public boolean updatePF() {
+
+		if (!isDatumUpdated(POWERFAIL)) {
+			try {
+				String strippedData = POWERFAIL.substring(1);
+				dbConnection.setTo(strippedData, InfoSET.POWERFAIL, MAC);
+				POWERFAIL = strippedData;
+
+				return true;
+
+			} catch (Exception e) {
+				// What if data update fails?
+				System.out.println("POWERFAIL - false");
+				return false;
+			}
+		}
+		return true;
+	}
+
+	/**
+	 * Updates the RELAY value to the database
+	 * @return true/false - Update successful/update unsuccessful
+	 */
+	public boolean updateRELAY() {
+
+		if (!isDatumUpdated(RELAY)) {
+			try {
+				String strippedData = RELAY.substring(1);
+				dbConnection.setTo(strippedData, InfoSET.RELAY, MAC);
+				RELAY = strippedData;
+
+				return true;
+
+			} catch (Exception e) {
+				// What if data update fails?
+				System.out.println("RELAY - false");
+				return false;
+			}
+		}
+		return true;
+	}
+
+	/**
+	 * Updates the RESET_TIME value to the database
+	 * @return true/false - Update successful/update unsuccessful
+	 */
+	public boolean updateRSTT() {
+
+		if (!isDatumUpdated(RESET_TIME)) {
+			try {
+				String strippedData = RESET_TIME.substring(1);
+				dbConnection.setTo(strippedData, InfoSET.RESET_TIME, MAC);
+				RESET_TIME = strippedData;
+
+				return true;
+
+			} catch (Exception e) {
+				// What if data update fails?
+				System.out.println("RESET_TIME - false");
+				return false;
+			}
+		}
+		return true;
+	}
+
+	/**
+	 * Updates the SSID value to the database
+	 * @return true/false - Update successful/update unsuccessful
+	 */
+	public boolean updateSSID() {
+
+		if (!isDatumUpdated(SSID)) {
+			try {
+				String strippedData = SSID.substring(1);
+				dbConnection.setTo(strippedData, InfoSET.SSID, MAC);
+				SSID = strippedData;
+
+				return true;
+
+			} catch (Exception e) {
+				// What if data update fails?
+				System.out.println("SSID - false");
+				return false;
+			}
+		}
+		return true;
+	}
+
+	/**
+	 * Updates the TIME value to the database
+	 * @return true/false - Update successful/update unsuccessful
+	 */
+	public boolean updateTIME() {
+
+		if (!isDatumUpdated(SSID)) {
+			try {
+				String strippedData = TIME.substring(1);
+				dbConnection.setTo(strippedData, InfoSET.TIME, MAC);
+				TIME = strippedData;
+
+				return true;
+
+			} catch (Exception e) {
+				// What if data update fails?
+				System.out.println("TIME - false");
+				return false;
+			}
+		}
+		return true;
+	}
+
+
+
+
+
+
+
 	
 	/**
 	 * Adds meter into DB with relevant information!
 	 */
 	private boolean addMeterInDB() {
-		
+		dbConnection.insertMeter(MAC);
 		return false; //TODO finish this stub
 	}
 	

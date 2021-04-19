@@ -24,6 +24,7 @@ public class dbConnection {
     static final String USER = "emmsdev";
     static final String PASS = "pumpkin";
     static final String DATABASE = "EMMS";
+    // add table name
     
     
 	/**
@@ -32,8 +33,11 @@ public class dbConnection {
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 		//sendMySQL("SELECT * FROM Meters");
-        getFrom(InfoGET.EMERGENCYBUTTON, "n:cheese");
-        setTo("0", InfoSET.EMERGENCYBUTTON, "n:cheese");
+        //getFrom(InfoGET.EMERGENCYBUTTON, "n:cheese");
+        //setTo("0", InfoSET.EMERGENCYBUTTON, "n:cheese");
+        //insertMeter("testMAC");
+        //deleteMeter("testMAC");
+
 	}
 
     /**
@@ -80,13 +84,10 @@ public class dbConnection {
                 return "";
 
             case POWERFAIL:
-                return "Last_power_fail";
+                return "Last_power_failure";
 
             case RELAY:
-                return "Reset";
-            
-            case RESET:
-                return "";
+                return "Relay";
 
             case RESET_TIME:
                 return "Reset_time";
@@ -98,7 +99,7 @@ public class dbConnection {
                 return "Time";
             
             default:
-                return "";
+                return "INFOGET ENUM ERROR";
         }
     }
 
@@ -146,13 +147,10 @@ public class dbConnection {
                 return "";
 
             case POWERFAIL:
-                return "Last_power_fail";
+                return "Last_power_failure";
 
             case RELAY:
-                return "Reset";
-            
-            case RESET:
-                return "";
+                return "Relay";
 
             case RESET_TIME:
                 return "Reset_time";
@@ -164,7 +162,7 @@ public class dbConnection {
                 return "Time";
             
             default:
-                return "";
+                return "INFOSET ENUM ERROR";
         }
     }
 
@@ -215,6 +213,44 @@ public class dbConnection {
         return (resultSet[0].equals("1")); 
 
      }
+
+    /**
+     * Inserts a meter into the database in a new row for a given MAC address.
+     * @author Bennett Andrews
+     * @param mac - Desired meter MAC as a string.
+     * @return true/false - Insert was successful/unsuccessful.
+     */
+     public static boolean insertMeter(String mac) {
+
+        String statement = "INSERT INTO Meters(MAC) VALUES ('" + mac + "');";
+
+        try {
+            sendMySQL(statement);
+            return true;
+        } catch (Exception e) {
+            // SQL failure
+            return false;
+        }
+    }
+
+    /**
+     * Deletes a meter and its row in the database for a given MAC address.
+     * @author Bennett Andrews
+     * @param mac - Desired meter MAC as a string.
+     * @return true/false - Delete was successful/unsuccessful.
+     */
+    public static boolean deleteMeter(String mac) {
+
+        String statement = "DELETE FROM Meters WHERE(MAC='" + mac + "');";
+
+        try {
+            sendMySQL(statement);
+            return true;
+        } catch (Exception e) {
+            // SQL failure
+            return false;
+        }
+    }
      
 	/**
 	 * Talks to Meters table in the database and gets all the meter ips!
