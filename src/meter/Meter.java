@@ -14,6 +14,7 @@ import wireless.Client;
  *
  */
 public class Meter {
+<<<<<<< Updated upstream
 
 	private static final char CHANGE_INDICATOR = '~'; // character appended to beginning of data when
 													  // the data is updated from the meters but has
@@ -21,9 +22,17 @@ public class Meter {
 
 	Boolean SetupComplete = false; // flips to true once initialized and the startup information is gathered.
 	
+=======
+	private static final char CHANGE_INDICATOR = '~';
+>>>>>>> Stashed changes
 	// Information from the meter /// BEGIN ///
 	String IP = "";
 	String MAC = "";
+	String LOCATION = "";
+	String WIFIBOARDVER = "";
+	String INSTALLYEAR = "";
+	String CLIENT = "";
+	String ID = "";
 	String SSID = ""; //TODO
 	String DEBUG = "";
 	String LIGHTS = "";
@@ -39,6 +48,7 @@ public class Meter {
 	String CB_VERSION = "";
 	String POWERFAIL = "";
 	String POWERDATA = "";
+	
 	// Information from the meter /// END ///
 
 	/**
@@ -51,6 +61,7 @@ public class Meter {
 		try {
 			// Create a new meter
 			Meter Test = new Meter("192.168.1.2");
+<<<<<<< Updated upstream
 
 			// set some default values for testing
 			Test.TIME = "~00:00";
@@ -67,6 +78,9 @@ public class Meter {
 			// String[] get = dbConnection.getFrom(InfoGET.EMERGENCYBUTTON, "n:cheese");
 			// System.out.println("Get Test: " + Arrays.toString(get));
 
+=======
+//			Test.upDateDatum(InfoSET.RELAY, "OFf");
+>>>>>>> Stashed changes
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -124,7 +138,11 @@ public class Meter {
 	 * @param value
 	 * @return
 	 */
+<<<<<<< Updated upstream
 	public void updateMeter() {
+=======
+	public boolean upDateDatum(InfoSET data, String value) {
+>>>>>>> Stashed changes
 		// the first thing to is to see if the meter exists!
 		boolean meterInSystem = dbConnection.isMeterInDB(this.MAC);
 
@@ -503,7 +521,7 @@ public class Meter {
 	 * @return
 	 * @throws Exception if it cannot find a meter
 	 */
-	public HashMap<String,String> getWifiInfo() throws Exception{
+	public void getWifiInfo() throws Exception{
 		HashMap<String, String> wifiData = new HashMap<String,String>();
 		Client client = new Client();
 		// go and get network settings from the meter to see if it is actually alive
@@ -520,16 +538,21 @@ public class Meter {
 //			System.out.println(Arrays.deepToString(RAWArray));
 			this.IP = RAWArray[1].replaceAll("CIFSR:STAMAC", "");
 			this.MAC = RAWArray[2].toUpperCase();
-			System.out.println(this.IP);
-			System.out.println(this.MAC);
+			System.out.println("IP: " + this.IP);
+			System.out.println("MAC: " + this.MAC);
 		}
 		
 		String configInfo = client.Communicate(this.IP, 80, "!MOD;CONFIG*");
-		System.out.println(configInfo);
-		
-		configInfo = client.Communicate(this.IP, 80, "!Read;Alarm*");
-		System.out.println(configInfo);
-		return wifiData;
+//		System.out.println(configInfo);
+		String configParse[] = configInfo.split(";");
+		System.out.println(Arrays.toString(configParse));
+		LOCATION = configParse[3];
+		WIFIBOARDVER = configParse[2];
+		INSTALLYEAR = configParse[1];
+		CLIENT = configParse[5];
+		ID = configParse[4];
+		DEBUG = configParse[6];
+		return;
 	}
 	
 	/**
