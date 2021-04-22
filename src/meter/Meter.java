@@ -14,7 +14,6 @@ import wireless.Client;
  *
  */
 public class Meter {
-<<<<<<< Updated upstream
 
 	private static final char CHANGE_INDICATOR = '~'; // character appended to beginning of data when
 													  // the data is updated from the meters but has
@@ -22,9 +21,6 @@ public class Meter {
 
 	Boolean SetupComplete = false; // flips to true once initialized and the startup information is gathered.
 	
-=======
-	private static final char CHANGE_INDICATOR = '~';
->>>>>>> Stashed changes
 	// Information from the meter /// BEGIN ///
 	String IP = "";
 	String MAC = "";
@@ -61,7 +57,6 @@ public class Meter {
 		try {
 			// Create a new meter
 			Meter Test = new Meter("192.168.1.2");
-<<<<<<< Updated upstream
 
 			// set some default values for testing
 			Test.TIME = "~00:00";
@@ -69,18 +64,8 @@ public class Meter {
 
 			// test updateMeter function
 			Test.updateMeter();
+			Test.removeThisMeter();
 
-			// // Test setting a value to the database
-			// boolean isSet = dbConnection.setTo("0", InfoSET.EMERGENCYBUTTON, "n:cheese");
-			// System.out.println("Set test worked? >" + isSet);
-
-			// // Test getting a value from the database
-			// String[] get = dbConnection.getFrom(InfoGET.EMERGENCYBUTTON, "n:cheese");
-			// System.out.println("Get Test: " + Arrays.toString(get));
-
-=======
-//			Test.upDateDatum(InfoSET.RELAY, "OFf");
->>>>>>> Stashed changes
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -138,11 +123,7 @@ public class Meter {
 	 * @param value
 	 * @return
 	 */
-<<<<<<< Updated upstream
 	public void updateMeter() {
-=======
-	public boolean upDateDatum(InfoSET data, String value) {
->>>>>>> Stashed changes
 		// the first thing to is to see if the meter exists!
 		boolean meterInSystem = dbConnection.isMeterInDB(this.MAC);
 
@@ -471,6 +452,10 @@ public class Meter {
 			}
 		}
 		return true;
+	}
+
+	public void removeThisMeter() {
+		dbConnection.deleteMeter(this.MAC);
 	}
 
 	/**
