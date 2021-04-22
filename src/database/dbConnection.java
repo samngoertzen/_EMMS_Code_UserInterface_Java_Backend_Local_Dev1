@@ -160,7 +160,22 @@ public class dbConnection {
 
             case TIME:
                 return "Time";
+                
+            case WIFIBOARDVERSION:
+                return "WiFi_version";
             
+            case LOCATION:
+                return "Location";
+                
+            case INSTALLYEAR:
+                return "Install_year";
+                
+            case ID:
+                return "Meter_id";
+                
+            case ONLINE:
+            	return "Is_online";
+                
             default:
                 return "INFOSET ENUM ERROR";
         }

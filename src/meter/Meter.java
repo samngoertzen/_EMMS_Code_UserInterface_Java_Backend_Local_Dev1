@@ -58,13 +58,9 @@ public class Meter {
 			// Create a new meter
 			Meter Test = new Meter("192.168.1.2");
 
-			// set some default values for testing
-			Test.TIME = "~00:00";
-			Test.MAC = "n:cheese";
-
 			// test updateMeter function
 			Test.updateMeter();
-			Test.removeThisMeter();
+//			Test.removeThisMeter();
 
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
@@ -84,7 +80,7 @@ public class Meter {
 	public Meter(String ip) throws Exception {
 		// First thing we do is check and see if the meter is on the network
 		IP = ip;
-		//getWifiInfo();
+		getWifiInfo();
 	}
 	
 /////////// Begin Code that Pushes information Java-->DB  ////////////
@@ -133,6 +129,10 @@ public class Meter {
 			addMeterInDB();
 		}
 
+		//If we get to here then the meter is online
+		isOnline();
+		/////////////////
+		
 		updateALARM();
 		updateCBV();
 		updateDEBUG();
@@ -140,6 +140,12 @@ public class Meter {
 		updateEA();
 		updateEU();
 		updateIP();
+		updateLOC();
+		updateWFBV();
+		updateIY();
+		updateID();
+		updateDBG();
+		updateMAC();
 		updateLIGHTS();
 		updatePSWD();
 		updatePF();
@@ -151,8 +157,153 @@ public class Meter {
 	}
 
 
+	
+	/**
+	 * Updates if meter is online
+	 * @Zachery_Holsinger
+	 * @return true/false if completed Successfully
+	 */
+	private boolean isOnline() {
+		if (isDatumUpdated("ONLINE")) { //@Bennett idk why but I had to take out the "!"
+			try {
+				dbConnection.setTo("ONLINE", InfoSET.ONLINE, MAC);
+				return true;
+
+			} catch (Exception e) {
+				// What if data update fails?
+				System.out.println("OFFLINE - false");
+				return false;
+			}
+		}
+		return true;
+	}
+
+	/**
+	 * Updates Debug mode state to the database
+	 * @Zachery_Holsinger
+	 * @return true/false if completed Successfully
+	 */
+	private boolean updateDBG() {
+		if (isDatumUpdated(DEBUG)) { //@Bennett idk why but I had to take out the "!"
+			try {
+				dbConnection.setTo(DEBUG, InfoSET.DEBUG, MAC);
+				return true;
+
+			} catch (Exception e) {
+				// What if data update fails?
+				System.out.println("DEBUG - false");
+				return false;
+			}
+		}
+		return true;
+	}
+	
+	/**
+	 * Updates meter ID to the database
+	 * @Zachery_Holsinger
+	 * @return true/false if completed Successfully
+	 */
+	private boolean updateID() {
+		if (isDatumUpdated(ID)) { //@Bennett idk why but I had to take out the "!"
+			try {
+				dbConnection.setTo(ID, InfoSET.ID, MAC);
+				return true;
+
+			} catch (Exception e) {
+				// What if data update fails?
+				System.out.println("ID - false");
+				return false;
+			}
+		}
+		return true;
+	}
+	
+
+	/**
+	 * Updates meter installation year to to the database
+	 * @Zachery_Holsinger
+	 * @return true/false if completed Successfully
+	 */
+	private boolean updateIY() {
+		if (isDatumUpdated(INSTALLYEAR)) { //@Bennett idk why but I had to take out the "!"
+			try {
+				dbConnection.setTo(INSTALLYEAR, InfoSET.INSTALLYEAR, MAC);
+				return true;
+
+			} catch (Exception e) {
+				// What if data update fails?
+				System.out.println("INSTALLYEAR - false");
+				return false;
+			}
+		}
+		return true;
+	}
 
 
+	/**
+	 * Updates meter wifi board version to to the database
+	 * @Zachery_Holsinger
+	 * @return true/false if completed Successfully
+	 */
+	private boolean updateWFBV() {
+		if (isDatumUpdated(WIFIBOARDVER)) { //@Bennett idk why but I had to take out the "!"
+			try {
+				dbConnection.setTo(WIFIBOARDVER, InfoSET.WIFIBOARDVERSION, MAC);
+				return true;
+
+			} catch (Exception e) {
+				// What if data update fails?
+				System.out.println("WIFIBOARDVER - false");
+				return false;
+			}
+		}
+		return true;
+	}
+	
+	
+	
+	/**
+	 * Updates meter location to the database
+	 * @Zachery_Holsinger
+	 * @return true/false if completed Successfully
+	 */
+	private boolean updateLOC() {
+		if (isDatumUpdated(LOCATION)) {
+			try {
+				dbConnection.setTo(LOCATION, InfoSET.LOCATION, MAC);
+				return true;
+
+			} catch (Exception e) {
+				// What if data update fails?
+				System.out.println("Location - false");
+				return false;
+			}
+		}
+		return true;
+	}
+
+
+	/**
+	 * Updates wifi MAC address into the database
+	 * Adapted method from updatedIP() circa 4/22/2021
+	 * @return true/false if completed Successfully
+	 * 
+	 * @Zachery_Holsinger
+	 */
+	private boolean updateMAC() {
+		if (!isDatumUpdated(MAC)) {
+			try {
+				dbConnection.setTo(MAC, InfoSET.MAC, MAC);
+				return true;
+
+			} catch (Exception e) {
+				// What if data update fails?
+				System.out.println("MAC - false");
+				return false;
+			}
+		}
+		return true;
+	}
 
 
 	/**
@@ -299,10 +450,11 @@ public class Meter {
 	 */
 	public boolean updateIP() {
 
-		if (!isDatumUpdated(IP)) {
+		//TODO this statement only works if evaluates to true, not sure why it is different than the rest
+		if (isDatumUpdated(IP)) {
 			try {
-				String strippedData = IP.substring(1);
-				dbConnection.setTo(strippedData, InfoSET.IP, MAC);
+				String strippedData = IP.substring(1); //@Bennett not sure why you added this substring
+				dbConnection.setTo(IP, InfoSET.IP, MAC);
 				IP = strippedData;
 
 				return true;
@@ -513,7 +665,7 @@ public class Meter {
 		String networkInformationRAW = client.Communicate(this.IP, 80, "!MOD;NETWORK*");
 		// since we might get "noDev" as a response, and our expected output is a large string we can set this minimum cap
 		if (networkInformationRAW.length() < 15) {
-			System.out.println(networkInformationRAW);
+//			System.out.println(networkInformationRAW);
 			throw new Exception("Meter Not Found");
 		} else {
 			String netRAW = networkInformationRAW;
@@ -523,14 +675,14 @@ public class Meter {
 //			System.out.println(Arrays.deepToString(RAWArray));
 			this.IP = RAWArray[1].replaceAll("CIFSR:STAMAC", "");
 			this.MAC = RAWArray[2].toUpperCase();
-			System.out.println("IP: " + this.IP);
-			System.out.println("MAC: " + this.MAC);
+//			System.out.println("IP: " + this.IP);
+//			System.out.println("MAC: " + this.MAC);
 		}
 		
 		String configInfo = client.Communicate(this.IP, 80, "!MOD;CONFIG*");
 //		System.out.println(configInfo);
 		String configParse[] = configInfo.split(";");
-		System.out.println(Arrays.toString(configParse));
+//		System.out.println(Arrays.toString(configParse));
 		LOCATION = configParse[3];
 		WIFIBOARDVER = configParse[2];
 		INSTALLYEAR = configParse[1];
