@@ -10,3 +10,5 @@ bin/meter/InfoSET.class
 bin/database/dbConnection.class
 bin/meter/InfoGET.class
 bin/meter/Meter.class
+bin/database/dbConnection.class
+bin/database/dbConnection.class
