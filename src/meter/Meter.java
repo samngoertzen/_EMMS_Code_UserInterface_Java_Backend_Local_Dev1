@@ -114,6 +114,15 @@ public class Meter {
 	}
 
 	/**
+	 * Tells the database that the meter was accessed and sets Last_update
+	 * to the current time.
+	 * @author Bennett Andrews
+	 */
+	public void updateTimestamp() {
+		dbConnection.meterTimestamp(this.MAC);
+	}
+
+	/**
 	 * Updates a meter for the database
 	 * @param data
 	 * @param value
@@ -145,7 +154,7 @@ public class Meter {
 		updateIY();
 		updateID();
 		updateDBG();
-		updateMAC();
+		//updateMAC();
 		updateLIGHTS();
 		updatePSWD();
 		updatePF();
@@ -283,32 +292,42 @@ public class Meter {
 	}
 
 
-	/**
-	 * Updates wifi MAC address into the database
-	 * Adapted method from updatedIP() circa 4/22/2021
-	 * @return true/false if completed Successfully
-	 * 
-	 * @Zachery_Holsinger
-	 */
-	private boolean updateMAC() {
-		if (!isDatumUpdated(MAC)) {
-			try {
-				dbConnection.setTo(MAC, InfoSET.MAC, MAC);
-				return true;
 
-			} catch (Exception e) {
-				// What if data update fails?
-				System.out.println("MAC - false");
-				return false;
-			}
-		}
-		return true;
-	}
+	/*
+	 * NO ZACH! YOU NEED THE MAC TO UPDATE VALUES IN THE DATABASE! 
+	 * NOT ONLY IS IT IMPOSSIBLE TO UPDATE MACS IRL, BUT YOU CAN'T
+	 * DO IT WITH OUR CODE!
+	 * 
+	 * - bennett
+	 */
+
+	// /**
+	//  * Updates wifi MAC address into the database
+	//  * Adapted method from updatedIP() circa 4/22/2021
+	//  * @return true/false if completed Successfully
+	//  * 
+	//  * @Zachery_Holsinger
+	//  */
+	// private boolean updateMAC() {
+	// 	if (!isDatumUpdated(MAC)) {
+	// 		try {
+	// 			dbConnection.setTo(MAC, InfoSET.MAC, MAC);
+	// 			return true;
+
+	// 		} catch (Exception e) {
+	// 			// What if data update fails?
+	// 			System.out.println("MAC - false");
+	// 			return false;
+	// 		}
+	// 	}
+	// 	return true;
+	// }
 
 
 	/**
 	 * Updates the ALARM value to the database
 	 * @return true/false - Update successful/update unsuccessful
+	 * @author Bennett Andrews
 	 */
 	public boolean updateALARM() {
 
@@ -332,6 +351,7 @@ public class Meter {
 	/**
 	 * Updates the CB_VERSION value to the database
 	 * @return true/false - Update successful/update unsuccessful
+	 * @author Bennett Andrews
 	 */
 	public boolean updateCBV() {
 
@@ -355,6 +375,7 @@ public class Meter {
 	/**
 	 * Updates the DEBUG value to the database
 	 * @return true/false - Update successful/update unsuccessful
+	 * @author Bennett Andrews
 	 */
 	public boolean updateDEBUG() {
 
@@ -378,6 +399,7 @@ public class Meter {
 	/**
 	 * Updates the EMERGENCYBUTTON value to the database
 	 * @return true/false - Update successful/update unsuccessful
+	 * @author Bennett Andrews
 	 */
 	 public boolean updateEB() {
 
@@ -401,6 +423,7 @@ public class Meter {
 	/**
 	 * Updates the ENERGYALLOCATION value to the database
 	 * @return true/false - Update successful/update unsuccessful
+	 * @author Bennett Andrews
 	 */
 	public boolean updateEA() {
 
@@ -424,6 +447,7 @@ public class Meter {
 	/**
 	 * Updates the ENERGY_USED value to the database
 	 * @return true/false - Update successful/update unsuccessful
+	 * @author Bennett Andrews
 	 */
 	public boolean updateEU() {
 
@@ -447,6 +471,7 @@ public class Meter {
 	/**
 	 * Updates the IP value to the database
 	 * @return true/false - Update successful/update unsuccessful
+	 * @author Bennett Andrews
 	 */
 	public boolean updateIP() {
 
@@ -471,6 +496,7 @@ public class Meter {
 	/**
 	 * Updates the LIGHTS value to the database
 	 * @return true/false - Update successful/update unsuccessful
+	 * @author Bennett Andrews
 	 */
 	public boolean updateLIGHTS() {
 
@@ -494,6 +520,7 @@ public class Meter {
 	/**
 	 * Updates the PASSWORD value to the database
 	 * @return true/false - Update successful/update unsuccessful
+	 * @author Bennett Andrews
 	 */
 	public boolean updatePSWD() {
 
@@ -517,6 +544,7 @@ public class Meter {
 	/**
 	 * Updates the POWERFAIL value to the database
 	 * @return true/false - Update successful/update unsuccessful
+	 * @author Bennett Andrews
 	 */
 	public boolean updatePF() {
 
@@ -540,6 +568,7 @@ public class Meter {
 	/**
 	 * Updates the RELAY value to the database
 	 * @return true/false - Update successful/update unsuccessful
+	 * @author Bennett Andrews
 	 */
 	public boolean updateRELAY() {
 
@@ -563,6 +592,7 @@ public class Meter {
 	/**
 	 * Updates the RESET_TIME value to the database
 	 * @return true/false - Update successful/update unsuccessful
+	 * @author Bennett Andrews
 	 */
 	public boolean updateRSTT() {
 
@@ -586,6 +616,7 @@ public class Meter {
 	/**
 	 * Updates the SSID value to the database
 	 * @return true/false - Update successful/update unsuccessful
+	 * @author Bennett Andrews
 	 */
 	public boolean updateSSID() {
 
@@ -613,6 +644,7 @@ public class Meter {
 	/**
 	 * Updates the TIME value to the database
 	 * @return true/false - Update successful/update unsuccessful
+	 * @author Bennett Andrews
 	 */
 	public boolean updateTIME() {
 
@@ -637,11 +669,11 @@ public class Meter {
 
 
 
-
-
+	
 	
 	/**
 	 * Adds meter into DB with relevant information!
+	 * @author Bennett Andrews
 	 */
 	private boolean addMeterInDB() {
 		dbConnection.insertMeter(MAC);

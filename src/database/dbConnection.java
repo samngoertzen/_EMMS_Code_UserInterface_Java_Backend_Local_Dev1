@@ -4,7 +4,9 @@
 package database;
 
 import java.sql.*;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Date;
 
 import meter.InfoGET;
 import meter.InfoSET;
@@ -34,7 +36,7 @@ public class dbConnection {
 		// TODO Auto-generated method stub
 		//sendMySQL("SELECT * FROM Meters");
         //getFrom(InfoGET.EMERGENCYBUTTON, "n:cheese");
-        //setTo("0", InfoSET.EMERGENCYBUTTON, "n:cheese");
+        setTo("0", InfoSET.EMERGENCYBUTTON, "AB:CD:EF:gH");
         //insertMeter("testMAC");
         //deleteMeter("testMAC");
 
@@ -190,8 +192,29 @@ public class dbConnection {
      * @return The return is a boolean true if the set worked, false if an error occured.
      */
     public static boolean setTo(String value, InfoSET field, String mac) {
+        boolean success = false;
         String sfield = columnFromInfoSET(field);
         String statement = "UPDATE Meters SET " + sfield + " = '" + value + "' WHERE (MAC='" + mac + "')";
+        try {
+            sendMySQL(statement);
+            success = true;
+        } catch (Exception e) {
+            // SQL failure
+            success = false;
+        }
+
+        return success && meterTimestamp(mac);
+    }
+
+    /**
+     * Calling this function updates the specified meter with the time it was accessed.
+     * @param mac - Meter MAC address as a string.
+     * @return true/false - Timestamp update successful/unsuccessful.
+     * @author Bennett Andrews
+     */
+    public static boolean meterTimestamp(String mac) {
+        String date = timestamp();
+        String statement = "UPDATE Meters SET Last_update='" + date + "' WHERE (MAC='" + mac + "')";
         try {
             sendMySQL(statement);
             return true;
@@ -265,6 +288,18 @@ public class dbConnection {
             // SQL failure
             return false;
         }
+    }
+
+    /**
+     * Used to return a string format of the date. Used for MySQL timestamps.
+     * @return System time in string format dd-MM-yyyy HH:mm:ss
+     * @author Bennett Andrews
+     */
+
+    public static String timestamp() {
+        Date date = new Date();
+        SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yy HH:mm:ss");
+        return formatter.format(date);
     }
      
 	/**
