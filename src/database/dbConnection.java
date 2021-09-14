@@ -4,6 +4,10 @@
 package database;
 
 import java.sql.*;
+import java.text.SimpleDateFormat;
+import java.util.Arrays;
+import java.util.Date;
+
 import meter.InfoGET;
 import meter.InfoSET;
 
@@ -22,6 +26,7 @@ public class dbConnection {
     static final String USER = "emmsdev";
     static final String PASS = "pumpkin";
     static final String DATABASE = "EMMS";
+    // add table name
     
     
 	/**
@@ -30,8 +35,11 @@ public class dbConnection {
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 		//sendMySQL("SELECT * FROM Meters");
-        getFrom(InfoGET.EMERGENCYBUTTON, "AB:CD:EF:gH");
+        //getFrom(InfoGET.EMERGENCYBUTTON, "n:cheese");
         setTo("0", InfoSET.EMERGENCYBUTTON, "AB:CD:EF:gH");
+        //insertMeter("testMAC");
+        //deleteMeter("testMAC");
+
 	}
 
     /**
@@ -78,13 +86,10 @@ public class dbConnection {
                 return "";
 
             case POWERFAIL:
-                return "Last_power_fail";
+                return "Last_power_failure";
 
             case RELAY:
-                return "Reset";
-            
-            case RESET:
-                return "";
+                return "Relay";
 
             case RESET_TIME:
                 return "Reset_time";
@@ -96,7 +101,7 @@ public class dbConnection {
                 return "Time";
             
             default:
-                return "";
+                return "INFOGET ENUM ERROR";
         }
     }
 
@@ -144,13 +149,10 @@ public class dbConnection {
                 return "";
 
             case POWERFAIL:
-                return "Last_power_fail";
+                return "Last_power_failure";
 
             case RELAY:
-                return "";
-            
-            case RESET:
-                return "";
+                return "Relay";
 
             case RESET_TIME:
                 return "Reset_time";
@@ -160,9 +162,24 @@ public class dbConnection {
 
             case TIME:
                 return "Time";
+                
+            case WIFIBOARDVERSION:
+                return "WiFi_version";
             
+            case LOCATION:
+                return "Location";
+                
+            case INSTALLYEAR:
+                return "Install_year";
+                
+            case ID:
+                return "Meter_id";
+                
+            case ONLINE:
+            	return "Is_online";
+                
             default:
-                return "";
+                return "INFOSET ENUM ERROR";
         }
     }
 
@@ -172,12 +189,39 @@ public class dbConnection {
      * @param value - The desired string literal value. 
      * @param field - InfoSET value to be modified.
      * @param mac - The MAC address of the desired meter in String format.
-     * @return The return is a ResultSet.
+     * @return The return is a boolean true if the set worked, false if an error occured.
      */
-    public static ResultSet setTo(String value, InfoSET field, String mac) {
+    public static boolean setTo(String value, InfoSET field, String mac) {
+        boolean success = false;
         String sfield = columnFromInfoSET(field);
         String statement = "UPDATE Meters SET " + sfield + " = '" + value + "' WHERE (MAC='" + mac + "')";
-        return sendMySQL(statement);
+        try {
+            sendMySQL(statement);
+            success = true;
+        } catch (Exception e) {
+            // SQL failure
+            success = false;
+        }
+
+        return success && meterTimestamp(mac);
+    }
+
+    /**
+     * Calling this function updates the specified meter with the time it was accessed.
+     * @param mac - Meter MAC address as a string.
+     * @return true/false - Timestamp update successful/unsuccessful.
+     * @author Bennett Andrews
+     */
+    public static boolean meterTimestamp(String mac) {
+        String date = timestamp();
+        String statement = "UPDATE Meters SET Last_update='" + date + "' WHERE (MAC='" + mac + "')";
+        try {
+            sendMySQL(statement);
+            return true;
+        } catch (Exception e) {
+            // SQL failure
+            return false;
+        }
     }
 
     /**
@@ -187,13 +231,77 @@ public class dbConnection {
      * @param mac - The MAC address of the desired meter in String format.
      * @return The return is a ResultSet.
      */
-    public static ResultSet getFrom(InfoGET field, String mac) {
+    public static String[] getFrom(InfoGET field, String mac) {
         String sfield = columnFromInfoGET(field);
-        String statement = "SELECT " + sfield + " FROM " + "Meters" + " WHERE (MAC ='" + mac + "')";
+        String statement = "SELECT " + sfield + " FROM Meters" + " WHERE (MAC ='" + mac + "')";
         return sendMySQL(statement);
     }
 	
-	
+    /** 
+     * An abstraction for verifying that a meter exists in the database. 
+     * @author Bennett Andrews
+     * @param mac - Desired meter MAC as a string.
+     * @return true/false - Meter is in the database already/Meter is not in the database.
+     */
+
+     public static boolean isMeterInDB(String mac) {
+        String statement = "SELECT EXISTS (SELECT * FROM Meters WHERE(MAC='" + mac + "'))";
+        String[] resultSet = sendMySQL(statement); //Note: this returns exactly one cell with 0 or 1.
+
+        return (resultSet[0].equals("1")); 
+
+     }
+
+    /**
+     * Inserts a meter into the database in a new row for a given MAC address.
+     * @author Bennett Andrews
+     * @param mac - Desired meter MAC as a string.
+     * @return true/false - Insert was successful/unsuccessful.
+     */
+     public static boolean insertMeter(String mac) {
+
+        String statement = "INSERT INTO Meters(MAC) VALUES ('" + mac + "');";
+
+        try {
+            sendMySQL(statement);
+            return true;
+        } catch (Exception e) {
+            // SQL failure
+            return false;
+        }
+    }
+
+    /**
+     * Deletes a meter and its row in the database for a given MAC address.
+     * @author Bennett Andrews
+     * @param mac - Desired meter MAC as a string.
+     * @return true/false - Delete was successful/unsuccessful.
+     */
+    public static boolean deleteMeter(String mac) {
+
+        String statement = "DELETE FROM Meters WHERE(MAC='" + mac + "');";
+
+        try {
+            sendMySQL(statement);
+            return true;
+        } catch (Exception e) {
+            // SQL failure
+            return false;
+        }
+    }
+
+    /**
+     * Used to return a string format of the date. Used for MySQL timestamps.
+     * @return System time in string format dd-MM-yyyy HH:mm:ss
+     * @author Bennett Andrews
+     */
+
+    public static String timestamp() {
+        Date date = new Date();
+        SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yy HH:mm:ss");
+        return formatter.format(date);
+    }
+     
 	/**
 	 * Talks to Meters table in the database and gets all the meter ips!
 	 */
@@ -206,11 +314,14 @@ public class dbConnection {
 	 * @param statement
 	 * @return
 	 */
-	public static ResultSet sendMySQL(String statement) {
+	public static String[] sendMySQL(String statement) {
 		Connection conn = null;
         Statement stmt = null;
         ResultSet rs = null;
         ResultSet returnrs = null;
+
+        String[] resultString;
+
         try {
             //STEP 2: Register JDBC driver
             Class.forName(JDBC_DRIVER);
@@ -225,13 +336,15 @@ public class dbConnection {
             returnrs = rs;
             ResultSetMetaData rsmd = rs.getMetaData();
             int columnsNumber = rsmd.getColumnCount();
+            resultString = new String[columnsNumber];
             while (rs.next()) {
                 for (int i = 1; i <= columnsNumber; i++) {
                     if (i > 1) System.out.print(",  ");
                     String columnValue = rs.getString(i);
-                    System.out.print(columnValue + " " + rsmd.getColumnName(i));
+                    resultString[i-1] = columnValue;
+//                    System.out.print(columnValue + " " + rsmd.getColumnName(i));
                 }
-                System.out.println("");
+//                System.out.println("");
             }
             
         } catch (SQLException se) {
@@ -278,7 +391,7 @@ public class dbConnection {
         }//end try
 //        System.out.println("Goodbye!"); 
 		
-		return returnrs;
+		return resultString;
 	}
 	
 	

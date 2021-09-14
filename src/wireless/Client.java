@@ -77,7 +77,7 @@ public class Client
 //		out.println("+++");
 		String line = "";
 		while ((line = in.readLine()) != null) {
-			System.out.println("Got: " + line);
+//			System.out.println("Got: " + line);
 			break;
 		}
 //		System.out.println(line);
