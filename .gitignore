@@ -1,0 +1,14 @@
+
+.vscode/settings.json
+bin/database/dbConnection.class
+*.class
+bin/
+bin/meter/Meter.class
+bin/meter/InfoGET.class
+bin/meter/InfoSET.class
+
+bin/database/dbConnection.class
+bin/meter/InfoGET.class
+bin/meter/Meter.class
+bin/database/dbConnection.class
+bin/database/dbConnection.class
