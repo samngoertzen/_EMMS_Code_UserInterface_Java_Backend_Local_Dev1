@@ -3,4 +3,8 @@
  
 ## FAQ:
 ### What do the blinky lights mean?
-- Blue - Wireless Connection active
+- Blue      - Wireless Connection active
+- Red       - Power
+- Yellow    - Flashes during TCP Communication
+- Green     - Flashes during SPI communication
+- **ESP2866 - Flashes during any communication
