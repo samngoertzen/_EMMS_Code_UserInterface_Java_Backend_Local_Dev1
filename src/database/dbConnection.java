@@ -30,6 +30,7 @@ public class dbConnection {
     
     
 	/**
+     * MAIN is a sandbox function for testing database connection functions
 	 * @param args
 	 */
 	public static void main(String[] args) {
@@ -37,7 +38,7 @@ public class dbConnection {
 		//sendMySQL("SELECT * FROM Meters");
         //String test = getFrom(InfoGET.Meter_name, "AB:CD:EF:gH")[0];
         //System.out.println(test);
-        // setTo("GER", InfoSET.Meter_password, "AB:CD:EF:gH");
+        //setTo("1111", InfoSET.Meter_password, "AB:CD:EF:gH");
         //insertMeter("testID");
         //deleteMeter("testID");
 
@@ -182,7 +183,7 @@ public class dbConnection {
 
     public static String timestamp() {
         Date date = new Date();
-        SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yy HH:mm:ss");
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         return formatter.format(date);
     }
      
