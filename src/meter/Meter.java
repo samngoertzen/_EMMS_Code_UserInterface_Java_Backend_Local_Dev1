@@ -23,7 +23,7 @@ public class Meter {
 	
 	// Information from the meter /// BEGIN ///
 	String IP = "";
-	String MAC = "";
+	String Meter_id = "";
 	String LOCATION = "";
 	String WIFIBOARDVER = "";
 	String INSTALLYEAR = "";
@@ -119,7 +119,7 @@ public class Meter {
 	 * @author Bennett Andrews
 	 */
 	public void updateTimestamp() {
-		dbConnection.meterTimestamp(this.MAC);
+		dbConnection.meterTimestamp(this.Meter_id);
 	}
 
 	/**
@@ -130,7 +130,7 @@ public class Meter {
 	 */
 	public void updateMeter() {
 		// the first thing to is to see if the meter exists!
-		boolean meterInSystem = dbConnection.isMeterInDB(this.MAC);
+		boolean meterInSystem = dbConnection.isMeterInDB(this.Meter_id);
 
 		System.out.println("Is meter in system? >" + meterInSystem);
 
@@ -149,9 +149,9 @@ public class Meter {
 		updateEA();
 		updateEU();
 		updateIP();
-		updateLOC();
+		//updateLOC();
 		updateWFBV();
-		updateIY();
+		//updateIY();
 		updateID();
 		updateDBG();
 		//updateMAC();
@@ -160,7 +160,7 @@ public class Meter {
 		updatePF();
 		updateRELAY();
 		updateRSTT();
-		updateSSID();
+		//updateSSID();
 		updateTIME();
 		
 	}
@@ -175,7 +175,7 @@ public class Meter {
 	private boolean isOnline() {
 		if (isDatumUpdated("ONLINE")) { //@Bennett idk why but I had to take out the "!"
 			try {
-				dbConnection.setTo("ONLINE", InfoSET.ONLINE, MAC);
+				dbConnection.setTo("ONLINE", InfoSET.Online, Meter_id);
 				return true;
 
 			} catch (Exception e) {
@@ -195,7 +195,7 @@ public class Meter {
 	private boolean updateDBG() {
 		if (isDatumUpdated(DEBUG)) { //@Bennett idk why but I had to take out the "!"
 			try {
-				dbConnection.setTo(DEBUG, InfoSET.DEBUG, MAC);
+				dbConnection.setTo(DEBUG, InfoSET.Debug_enabled, Meter_id);
 				return true;
 
 			} catch (Exception e) {
@@ -215,33 +215,12 @@ public class Meter {
 	private boolean updateID() {
 		if (isDatumUpdated(ID)) { //@Bennett idk why but I had to take out the "!"
 			try {
-				dbConnection.setTo(ID, InfoSET.ID, MAC);
+				dbConnection.setTo(ID, InfoSET.Meter_id, Meter_id);
 				return true;
 
 			} catch (Exception e) {
 				// What if data update fails?
 				System.out.println("ID - false");
-				return false;
-			}
-		}
-		return true;
-	}
-	
-
-	/**
-	 * Updates meter installation year to to the database
-	 * @Zachery_Holsinger
-	 * @return true/false if completed Successfully
-	 */
-	private boolean updateIY() {
-		if (isDatumUpdated(INSTALLYEAR)) { //@Bennett idk why but I had to take out the "!"
-			try {
-				dbConnection.setTo(INSTALLYEAR, InfoSET.INSTALLYEAR, MAC);
-				return true;
-
-			} catch (Exception e) {
-				// What if data update fails?
-				System.out.println("INSTALLYEAR - false");
 				return false;
 			}
 		}
@@ -257,7 +236,7 @@ public class Meter {
 	private boolean updateWFBV() {
 		if (isDatumUpdated(WIFIBOARDVER)) { //@Bennett idk why but I had to take out the "!"
 			try {
-				dbConnection.setTo(WIFIBOARDVER, InfoSET.WIFIBOARDVERSION, MAC);
+				dbConnection.setTo(WIFIBOARDVER, InfoSET.Firmware_version_WiFi_board, Meter_id);
 				return true;
 
 			} catch (Exception e) {
@@ -268,33 +247,11 @@ public class Meter {
 		}
 		return true;
 	}
-	
-	
-	
-	/**
-	 * Updates meter location to the database
-	 * @Zachery_Holsinger
-	 * @return true/false if completed Successfully
-	 */
-	private boolean updateLOC() {
-		if (isDatumUpdated(LOCATION)) {
-			try {
-				dbConnection.setTo(LOCATION, InfoSET.LOCATION, MAC);
-				return true;
-
-			} catch (Exception e) {
-				// What if data update fails?
-				System.out.println("Location - false");
-				return false;
-			}
-		}
-		return true;
-	}
 
 
 
 	/*
-	 * NO ZACH! YOU NEED THE MAC TO UPDATE VALUES IN THE DATABASE! 
+	 * NO ZACH! YOU NEED THE Meter_id TO UPDATE VALUES IN THE DATABASE! 
 	 * NOT ONLY IS IT IMPOSSIBLE TO UPDATE MACS IRL, BUT YOU CAN'T
 	 * DO IT WITH OUR CODE!
 	 * 
@@ -302,21 +259,21 @@ public class Meter {
 	 */
 
 	// /**
-	//  * Updates wifi MAC address into the database
+	//  * Updates wifi Meter_id address into the database
 	//  * Adapted method from updatedIP() circa 4/22/2021
 	//  * @return true/false if completed Successfully
 	//  * 
 	//  * @Zachery_Holsinger
 	//  */
 	// private boolean updateMAC() {
-	// 	if (!isDatumUpdated(MAC)) {
+	// 	if (!isDatumUpdated(Meter_id)) {
 	// 		try {
-	// 			dbConnection.setTo(MAC, InfoSET.MAC, MAC);
+	// 			dbConnection.setTo(Meter_id, InfoSET.Meter_id, Meter_id);
 	// 			return true;
 
 	// 		} catch (Exception e) {
 	// 			// What if data update fails?
-	// 			System.out.println("MAC - false");
+	// 			System.out.println("Meter_id - false");
 	// 			return false;
 	// 		}
 	// 	}
@@ -334,7 +291,7 @@ public class Meter {
 		if (!isDatumUpdated(ALARM)) {
 			try {
 				String strippedData = ALARM.substring(1);
-				dbConnection.setTo(strippedData, InfoSET.ALARM, MAC);
+				dbConnection.setTo(strippedData, InfoSET.Alarm_enabled, Meter_id);
 				ALARM = strippedData;
 
 				return true;
@@ -358,7 +315,7 @@ public class Meter {
 		if (!isDatumUpdated(CB_VERSION)) {
 			try {
 				String strippedData = CB_VERSION.substring(1);
-				dbConnection.setTo(strippedData, InfoSET.CB_VERSION, MAC);
+				dbConnection.setTo(strippedData, InfoSET.Firmware_version_command_board, Meter_id);
 				CB_VERSION = strippedData;
 
 				return true;
@@ -382,7 +339,7 @@ public class Meter {
 		if (!isDatumUpdated(DEBUG)) {
 			try {
 				String strippedData = DEBUG.substring(1);
-				dbConnection.setTo(strippedData, InfoSET.DEBUG, MAC);
+				dbConnection.setTo(strippedData, InfoSET.Debug_enabled, Meter_id);
 				DEBUG = strippedData;
 
 				return true;
@@ -406,7 +363,7 @@ public class Meter {
 		if (!isDatumUpdated(EMERGENCYBUTTON)) {
 			try {
 				String strippedData = EMERGENCYBUTTON.substring(1);
-				dbConnection.setTo(strippedData, InfoSET.EMERGENCYBUTTON, MAC);
+				dbConnection.setTo(strippedData, InfoSET.Emergency_button_enabled, Meter_id);
 				EMERGENCYBUTTON = strippedData;
 
 				return true;
@@ -427,10 +384,10 @@ public class Meter {
 	 */
 	public boolean updateEA() {
 
-		if (!isDatumUpdated(ENERGY_USED)) {
+		if (!isDatumUpdated(ENERGYALLOCATION)) {
 			try {
 				String strippedData = ENERGYALLOCATION.substring(1);
-				dbConnection.setTo(strippedData, InfoSET.ENERGYALLOCATION, MAC);
+				dbConnection.setTo(strippedData, InfoSET.Energy_allocation, Meter_id);
 				ENERGYALLOCATION = strippedData;
 
 				return true;
@@ -454,7 +411,7 @@ public class Meter {
 		if (!isDatumUpdated(ENERGY_USED)) {
 			try {
 				String strippedData = ENERGY_USED.substring(1);
-				dbConnection.setTo(strippedData, InfoSET.ENERGY_USED, MAC);
+				dbConnection.setTo(strippedData, InfoSET.Energy_used, Meter_id);
 				ENERGY_USED = strippedData;
 
 				return true;
@@ -479,7 +436,7 @@ public class Meter {
 		if (isDatumUpdated(IP)) {
 			try {
 				String strippedData = IP.substring(1); //@Bennett not sure why you added this substring
-				dbConnection.setTo(IP, InfoSET.IP, MAC);
+				dbConnection.setTo(IP, InfoSET.IP_address, Meter_id);
 				IP = strippedData;
 
 				return true;
@@ -503,7 +460,7 @@ public class Meter {
 		if (!isDatumUpdated(LIGHTS)) {
 			try {
 				String strippedData = LIGHTS.substring(1);
-				dbConnection.setTo(strippedData, InfoSET.LIGHTS, MAC);
+				dbConnection.setTo(strippedData, InfoSET.Lights_enabled, Meter_id);
 				LIGHTS = strippedData;
 
 				return true;
@@ -527,7 +484,7 @@ public class Meter {
 		if (!isDatumUpdated(PASSWORD)) {
 			try {
 				String strippedData = PASSWORD.substring(1);
-				dbConnection.setTo(strippedData, InfoSET.PASSWORD, MAC);
+				dbConnection.setTo(strippedData, InfoSET.Meter_password, Meter_id);
 				PASSWORD = strippedData;
 
 				return true;
@@ -551,7 +508,7 @@ public class Meter {
 		if (!isDatumUpdated(POWERFAIL)) {
 			try {
 				String strippedData = POWERFAIL.substring(1);
-				dbConnection.setTo(strippedData, InfoSET.POWERFAIL, MAC);
+				dbConnection.setTo(strippedData, InfoSET.Power_failure_last, Meter_id);
 				POWERFAIL = strippedData;
 
 				return true;
@@ -575,7 +532,7 @@ public class Meter {
 		if (!isDatumUpdated(RELAY)) {
 			try {
 				String strippedData = RELAY.substring(1);
-				dbConnection.setTo(strippedData, InfoSET.RELAY, MAC);
+				dbConnection.setTo(strippedData, InfoSET.Relay_enabled, Meter_id);
 				RELAY = strippedData;
 
 				return true;
@@ -599,7 +556,7 @@ public class Meter {
 		if (!isDatumUpdated(RESET_TIME)) {
 			try {
 				String strippedData = RESET_TIME.substring(1);
-				dbConnection.setTo(strippedData, InfoSET.RESET_TIME, MAC);
+				dbConnection.setTo(strippedData, InfoSET.Energy_allocation_reset_time, Meter_id);
 				RESET_TIME = strippedData;
 
 				return true;
@@ -613,32 +570,32 @@ public class Meter {
 		return true;
 	}
 
-	/**
-	 * Updates the SSID value to the database
-	 * @return true/false - Update successful/update unsuccessful
-	 * @author Bennett Andrews
-	 */
-	public boolean updateSSID() {
+	// /**
+	//  * Updates the SSID value to the database
+	//  * @return true/false - Update successful/update unsuccessful
+	//  * @author Bennett Andrews
+	//  */
+	// public boolean updateSSID() {
 
-		if (!isDatumUpdated(SSID)) {
-			try {
-				String strippedData = SSID.substring(1);
-				dbConnection.setTo(strippedData, InfoSET.SSID, MAC);
-				SSID = strippedData;
+	// 	if (!isDatumUpdated(SSID)) {
+	// 		try {
+	// 			String strippedData = SSID.substring(1);
+	// 			dbConnection.setTo(strippedData, InfoSET.SSID, Meter_id);
+	// 			SSID = strippedData;
 
-				return true;
+	// 			return true;
 
-			} catch (Exception e) {
-				// What if data update fails?
-				System.out.println("SSID - false");
-				return false;
-			}
-		}
-		return true;
-	}
+	// 		} catch (Exception e) {
+	// 			// What if data update fails?
+	// 			System.out.println("SSID - false");
+	// 			return false;
+	// 		}
+	// 	}
+	// 	return true;
+	// }
 
 	public void removeThisMeter() {
-		dbConnection.deleteMeter(this.MAC);
+		dbConnection.deleteMeter(this.Meter_id);
 	}
 
 	/**
@@ -651,7 +608,7 @@ public class Meter {
 		if (!isDatumUpdated(SSID)) {
 			try {
 				String strippedData = TIME.substring(1);
-				dbConnection.setTo(strippedData, InfoSET.TIME, MAC);
+				dbConnection.setTo(strippedData, InfoSET.Meter_time, Meter_id);
 				TIME = strippedData;
 
 				return true;
@@ -676,7 +633,7 @@ public class Meter {
 	 * @author Bennett Andrews
 	 */
 	private boolean addMeterInDB() {
-		dbConnection.insertMeter(MAC);
+		dbConnection.insertMeter(Meter_id);
 		return false; //TODO finish this stub
 	}
 	
@@ -706,9 +663,9 @@ public class Meter {
 			String[] RAWArray = netRAW.split(",");
 //			System.out.println(Arrays.deepToString(RAWArray));
 			this.IP = RAWArray[1].replaceAll("CIFSR:STAMAC", "");
-			this.MAC = RAWArray[2].toUpperCase();
+			this.Meter_id = RAWArray[2].toUpperCase();
 //			System.out.println("IP: " + this.IP);
-//			System.out.println("MAC: " + this.MAC);
+//			System.out.println("Meter_id: " + this.Meter_id);
 		}
 		
 		String configInfo = client.Communicate(this.IP, 80, "!MOD;CONFIG*");

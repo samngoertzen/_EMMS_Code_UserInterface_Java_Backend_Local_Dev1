@@ -35,10 +35,11 @@ public class dbConnection {
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 		//sendMySQL("SELECT * FROM Meters");
-        //getFrom(InfoGET.EMERGENCYBUTTON, "n:cheese");
-        setTo("0", InfoSET.EMERGENCYBUTTON, "AB:CD:EF:gH");
-        //insertMeter("testMAC");
-        //deleteMeter("testMAC");
+        //String test = getFrom(InfoGET.Meter_name, "AB:CD:EF:gH")[0];
+        //System.out.println(test);
+        // setTo("GER", InfoSET.Meter_password, "AB:CD:EF:gH");
+        //insertMeter("testID");
+        //deleteMeter("testID");
 
 	}
 
@@ -50,59 +51,8 @@ public class dbConnection {
      */
     public static String columnFromInfoGET(InfoGET field) {
 
-        switch (field) {
-
-            case ALARM:
-                return "Alarm";
-
-            case CB_VERSION:
-                return "CB_version";
-            
-            case DEBUG:
-                return "Debug";
-
-            case EMERGENCYBUTTON:
-                return "Emergency_button_state";
-
-            case ENERGYALLOCATION:
-                return "Total_allotment";
-
-            case ENERGY_USED:
-                return "Used_energy";
-
-            case IP:
-                return "IP_addr";
-            
-            case LIGHTS:
-                return "Lights";
-            
-            case MAC:
-                return "MAC";
-
-            case PASSWORD:
-                return "Password";
-            
-            case POWERDATA:
-                return "";
-
-            case POWERFAIL:
-                return "Last_power_failure";
-
-            case RELAY:
-                return "Relay";
-
-            case RESET_TIME:
-                return "Reset_time";
-            
-            case SSID:
-                return "Meter_id";
-
-            case TIME:
-                return "Time";
-            
-            default:
-                return "INFOGET ENUM ERROR";
-        }
+        return field.toString();
+       
     }
 
     /**
@@ -113,74 +63,8 @@ public class dbConnection {
      */
     public static String columnFromInfoSET(InfoSET field) {
 
-        switch (field) {
-
-            case ALARM:
-                return "Alarm";
-
-            case CB_VERSION:
-                return "CB_version";
-            
-            case DEBUG:
-                return "Debug";
-
-            case EMERGENCYBUTTON:
-                return "Emergency_button_state";
-
-            case ENERGYALLOCATION:
-                return "Total_allotment";
-
-            case ENERGY_USED:
-                return "Used_energy";
-
-            case IP:
-                return "IP_addr";
-            
-            case LIGHTS:
-                return "Lights";
-            
-            case MAC:
-                return "MAC";
-
-            case PASSWORD:
-                return "Password";
-            
-            case POWERDATA:
-                return "";
-
-            case POWERFAIL:
-                return "Last_power_failure";
-
-            case RELAY:
-                return "Relay";
-
-            case RESET_TIME:
-                return "Reset_time";
-            
-            case SSID:
-                return "Meter_id";
-
-            case TIME:
-                return "Time";
-                
-            case WIFIBOARDVERSION:
-                return "WiFi_version";
-            
-            case LOCATION:
-                return "Location";
-                
-            case INSTALLYEAR:
-                return "Install_year";
-                
-            case ID:
-                return "Meter_id";
-                
-            case ONLINE:
-            	return "Is_online";
-                
-            default:
-                return "INFOSET ENUM ERROR";
-        }
+        return field.toString();
+        
     }
 
     /**
@@ -188,13 +72,13 @@ public class dbConnection {
      * @author Bennett Andrews
      * @param value - The desired string literal value. 
      * @param field - InfoSET value to be modified.
-     * @param mac - The MAC address of the desired meter in String format.
+     * @param Meter_id - The Meter_id address of the desired meter in String format.
      * @return The return is a boolean true if the set worked, false if an error occured.
      */
-    public static boolean setTo(String value, InfoSET field, String mac) {
+    public static boolean setTo(String value, InfoSET field, String Meter_id) {
         boolean success = false;
         String sfield = columnFromInfoSET(field);
-        String statement = "UPDATE Meters SET " + sfield + " = '" + value + "' WHERE (MAC='" + mac + "')";
+        String statement = "UPDATE Meters SET " + sfield + " = '" + value + "' WHERE (Meter_id='" + Meter_id + "')";
         try {
             sendMySQL(statement);
             success = true;
@@ -203,18 +87,18 @@ public class dbConnection {
             success = false;
         }
 
-        return success && meterTimestamp(mac);
+        return success && meterTimestamp(Meter_id);
     }
 
     /**
      * Calling this function updates the specified meter with the time it was accessed.
-     * @param mac - Meter MAC address as a string.
+     * @param Meter_id - Meter Meter_id address as a string.
      * @return true/false - Timestamp update successful/unsuccessful.
      * @author Bennett Andrews
      */
-    public static boolean meterTimestamp(String mac) {
+    public static boolean meterTimestamp(String Meter_id) {
         String date = timestamp();
-        String statement = "UPDATE Meters SET Last_update='" + date + "' WHERE (MAC='" + mac + "')";
+        String statement = "UPDATE Meters SET Last_database_update='" + date + "' WHERE (Meter_id='" + Meter_id + "')";
         try {
             sendMySQL(statement);
             return true;
@@ -228,24 +112,24 @@ public class dbConnection {
      * An abstraction for getting information from the database.
      * @author Bennett Andrews
      * @param field - InfoGET value to be fetched
-     * @param mac - The MAC address of the desired meter in String format.
+     * @param Meter_id - The Meter_id address of the desired meter in String format.
      * @return The return is a ResultSet.
      */
-    public static String[] getFrom(InfoGET field, String mac) {
+    public static String[] getFrom(InfoGET field, String Meter_id) {
         String sfield = columnFromInfoGET(field);
-        String statement = "SELECT " + sfield + " FROM Meters" + " WHERE (MAC ='" + mac + "')";
+        String statement = "SELECT " + sfield + " FROM Meters" + " WHERE (Meter_id ='" + Meter_id + "')";
         return sendMySQL(statement);
     }
 	
     /** 
      * An abstraction for verifying that a meter exists in the database. 
      * @author Bennett Andrews
-     * @param mac - Desired meter MAC as a string.
+     * @param Meter_id - Desired meter Meter_id as a string.
      * @return true/false - Meter is in the database already/Meter is not in the database.
      */
 
-     public static boolean isMeterInDB(String mac) {
-        String statement = "SELECT EXISTS (SELECT * FROM Meters WHERE(MAC='" + mac + "'))";
+     public static boolean isMeterInDB(String Meter_id) {
+        String statement = "SELECT EXISTS (SELECT * FROM Meters WHERE(Meter_id='" + Meter_id + "'))";
         String[] resultSet = sendMySQL(statement); //Note: this returns exactly one cell with 0 or 1.
 
         return (resultSet[0].equals("1")); 
@@ -253,14 +137,14 @@ public class dbConnection {
      }
 
     /**
-     * Inserts a meter into the database in a new row for a given MAC address.
+     * Inserts a meter into the database in a new row for a given Meter_id address.
      * @author Bennett Andrews
-     * @param mac - Desired meter MAC as a string.
+     * @param Meter_id - Desired meter Meter_id as a string.
      * @return true/false - Insert was successful/unsuccessful.
      */
-     public static boolean insertMeter(String mac) {
+     public static boolean insertMeter(String Meter_id) {
 
-        String statement = "INSERT INTO Meters(MAC) VALUES ('" + mac + "');";
+        String statement = "INSERT INTO Meters(Meter_id) VALUES ('" + Meter_id + "');";
 
         try {
             sendMySQL(statement);
@@ -272,14 +156,14 @@ public class dbConnection {
     }
 
     /**
-     * Deletes a meter and its row in the database for a given MAC address.
+     * Deletes a meter and its row in the database for a given Meter_id address.
      * @author Bennett Andrews
-     * @param mac - Desired meter MAC as a string.
+     * @param Meter_id - Desired meter Meter_id as a string.
      * @return true/false - Delete was successful/unsuccessful.
      */
-    public static boolean deleteMeter(String mac) {
+    public static boolean deleteMeter(String Meter_id) {
 
-        String statement = "DELETE FROM Meters WHERE(MAC='" + mac + "');";
+        String statement = "DELETE FROM Meters WHERE(Meter_id='" + Meter_id + "');";
 
         try {
             sendMySQL(statement);
