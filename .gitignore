@@ -13,3 +13,4 @@ bin/meter/Meter.class
 bin/database/dbConnection.class
 bin/database/dbConnection.class
 *.class
+*.class

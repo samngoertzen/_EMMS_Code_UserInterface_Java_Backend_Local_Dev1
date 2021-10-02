@@ -41,6 +41,7 @@ public class dbConnection {
         //setTo("1111", InfoSET.Meter_password, "AB:CD:EF:gH");
         //insertMeter("testID");
         //deleteMeter("testID");
+        getCommandsForMeter("QW:ER:TY");
 
 	}
 
@@ -175,6 +176,20 @@ public class dbConnection {
         }
     }
 
+    public static String[] getCommandsForMeter(String Meter_id) {
+        String statement = "SELECT * FROM Actions WHERE(Meter_id='" + Meter_id + "' AND Sent='0');";
+
+        try {
+            String[] response = sendMySQL2(statement);
+            System.out.println(response[0]);
+            System.out.println(response[1]);
+            return response;
+        } catch (Exception e) {
+            // SQL failure
+            return new String[]{"error"};
+        }
+    }
+
     /**
      * Used to return a string format of the date. Used for MySQL timestamps.
      * @return System time in string format dd-MM-yyyy HH:mm:ss
@@ -192,6 +207,96 @@ public class dbConnection {
 	 */
 	public static void updateIPs() {
 		
+	}
+
+    /**
+	 * Executes mysql query on database and returns response
+	 * @param statement
+	 * @return
+	 */
+	public static String[] sendMySQL2(String statement) {
+		Connection conn = null;
+        Statement stmt = null;
+        ResultSet rs = null;
+        ResultSet returnrs = null;
+
+        String[][] resultString;
+        String[] rowValues;
+
+        try {
+            //STEP 2: Register JDBC driver
+            Class.forName(JDBC_DRIVER);
+
+            //STEP 3: Open a connection
+//            System.out.println("Connecting to a selected database...");
+            conn = DriverManager.getConnection(
+                    "jdbc:mariadb://"+ DB_IP + ":" + DB_PORT + "/" + DATABASE, USER, PASS);
+//            System.out.println("Connected database successfully...");
+            stmt = conn.createStatement();
+            rs = stmt.executeQuery(statement);
+            returnrs = rs;
+            ResultSetMetaData rsmd = rs.getMetaData();
+            int columnsNumber = rsmd.getColumnCount();
+            int rowsNumber = rs.getFetchSize();
+            resultString = new String[rs.getFetchSize()][columnsNumber];
+            rowValues = new String[columnsNumber];
+            while (rs.next()) {
+                for (int i = 1; i <= columnsNumber; i++) {
+                    if (i > 1) System.out.print(",  ");
+                    String columnValue = rs.getString(i);
+                    rowValues[i-1] = columnValue;
+//                    System.out.print(columnValue + " " + rsmd.getColumnName(i));
+                }
+
+
+//                System.out.println("");
+            }
+            
+        } catch (SQLException se) {
+            //Handle errors for JDBC
+            se.printStackTrace();
+            return null;
+        } catch (Exception e) {
+            //Handle errors for Class.forName
+            e.printStackTrace();
+            return null;
+        } finally {
+            //finally block used to close resources
+            try {
+                if (stmt != null) {
+                    conn.close();
+                }
+            } catch (SQLException se) {
+            	return null;
+            }// do nothing
+            try {
+                if (conn != null) {
+                    conn.close();
+                }
+            } catch (SQLException se) {
+                se.printStackTrace();
+            }
+            if (rs != null) {
+                try {
+                    rs.close();
+                } catch (SQLException sqlEx) { } // ignore
+
+                rs = null;
+            }
+
+            if (stmt != null) {
+                try {
+                    stmt.close();
+                } catch (SQLException sqlEx) { } // ignore
+
+                stmt = null;
+            }
+            
+            //end finally try
+        }//end try
+//        System.out.println("Goodbye!"); 
+		
+		return resultString;
 	}
 	
 	/**
