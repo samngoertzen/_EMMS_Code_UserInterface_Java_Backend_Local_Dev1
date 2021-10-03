@@ -34,14 +34,34 @@ public class dbConnection {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		// TODO Auto-generated method stub
-		//sendMySQL("SELECT * FROM Meters");
-        //String test = getFrom(InfoGET.Meter_name, "AB:CD:EF:gH")[0];
-        //System.out.println(test);
-        //setTo("1111", InfoSET.Meter_password, "AB:CD:EF:gH");
-        //insertMeter("testID");
-        //deleteMeter("testID");
-        getCommandsForMeter("QW:ER:TY");
+
+        // ---------------------------------------
+        //      Test getFrom
+        // ---------------------------------------
+        // String test = getFrom(InfoGET.Meter_name, "AB:CD:EF:gH");
+        // System.out.println(test);
+
+        // ---------------------------------------
+        //      Test setTo
+        // ---------------------------------------
+        // setTo("golf", InfoSET.Meter_password, "AB:CD:EF:gH");
+
+        // ---------------------------------------
+        //      Test isMeterInDB
+        // ---------------------------------------
+        // System.out.println( isMeterInDB("AB:CD:EF:gH") ? "yes":"no" );
+        // System.out.println( isMeterInDB("fishie") ? "yes":"no" );
+
+        // ---------------------------------------
+        //      Test insertMeter and deleteMeter
+        // ---------------------------------------
+        // insertMeter("testID");
+        // deleteMeter("testID");
+
+        // ---------------------------------------
+        //      Test getCommandsForMeter
+        // ---------------------------------------
+        getCommandsForMeter("AB:CD:EF:gH");
 
 	}
 
@@ -54,7 +74,6 @@ public class dbConnection {
     public static String columnFromInfoGET(InfoGET field) {
 
         return field.toString();
-       
     }
 
     /**
@@ -66,7 +85,6 @@ public class dbConnection {
     public static String columnFromInfoSET(InfoSET field) {
 
         return field.toString();
-        
     }
 
     /**
@@ -82,14 +100,15 @@ public class dbConnection {
         String sfield = columnFromInfoSET(field);
         String statement = "UPDATE Meters SET " + sfield + " = '" + value + "' WHERE (Meter_id='" + Meter_id + "')";
         try {
-            sendMySQL(statement);
+            sendMySQL2(statement);
+            meterTimestamp(Meter_id);
             success = true;
         } catch (Exception e) {
             // SQL failure
             success = false;
+            e.printStackTrace();
         }
-
-        return success && meterTimestamp(Meter_id);
+        return success;
     }
 
     /**
@@ -102,7 +121,7 @@ public class dbConnection {
         String date = timestamp();
         String statement = "UPDATE Meters SET Last_database_update='" + date + "' WHERE (Meter_id='" + Meter_id + "')";
         try {
-            sendMySQL(statement);
+            sendMySQL2(statement);
             return true;
         } catch (Exception e) {
             // SQL failure
@@ -117,10 +136,11 @@ public class dbConnection {
      * @param Meter_id - The Meter_id address of the desired meter in String format.
      * @return The return is a ResultSet.
      */
-    public static String[] getFrom(InfoGET field, String Meter_id) {
+    public static String getFrom(InfoGET field, String Meter_id) {
         String sfield = columnFromInfoGET(field);
         String statement = "SELECT " + sfield + " FROM Meters" + " WHERE (Meter_id ='" + Meter_id + "')";
-        return sendMySQL(statement);
+        String[][] results = sendMySQL2(statement);
+        return results[0][0];
     }
 	
     /** 
@@ -129,13 +149,11 @@ public class dbConnection {
      * @param Meter_id - Desired meter Meter_id as a string.
      * @return true/false - Meter is in the database already/Meter is not in the database.
      */
-
      public static boolean isMeterInDB(String Meter_id) {
         String statement = "SELECT EXISTS (SELECT * FROM Meters WHERE(Meter_id='" + Meter_id + "'))";
-        String[] resultSet = sendMySQL(statement); //Note: this returns exactly one cell with 0 or 1.
+        String[][] resultSet = sendMySQL2(statement); //Note: this returns exactly one cell with 0 or 1.
 
-        return (resultSet[0].equals("1")); 
-
+        return (resultSet[0][0].equals("1"));
      }
 
     /**
@@ -149,7 +167,7 @@ public class dbConnection {
         String statement = "INSERT INTO Meters(Meter_id) VALUES ('" + Meter_id + "');";
 
         try {
-            sendMySQL(statement);
+            sendMySQL2(statement);
             return true;
         } catch (Exception e) {
             // SQL failure
@@ -168,7 +186,7 @@ public class dbConnection {
         String statement = "DELETE FROM Meters WHERE(Meter_id='" + Meter_id + "');";
 
         try {
-            sendMySQL(statement);
+            sendMySQL2(statement);
             return true;
         } catch (Exception e) {
             // SQL failure
@@ -176,17 +194,23 @@ public class dbConnection {
         }
     }
 
-    public static String[] getCommandsForMeter(String Meter_id) {
-        String statement = "SELECT * FROM Actions WHERE(Meter_id='" + Meter_id + "' AND Sent='0');";
+    /**
+     * Fetches all the commands queued to be sent to a specified meter. Return is
+     * formatted in an array of the form {@code String[row][column]}.
+     * @author Bennett Andrews
+     * @param Meter_id {@code String} - Meter identifier
+     * @return Two dimensional array of values returned from the database query.
+     */
+    public static String[][] getCommandsForMeter(String Meter_id) {
+        String statement = "SELECT Meter_id, Command FROM Actions WHERE(Meter_id='" + Meter_id + "' AND Sent='0');";
 
         try {
-            String[] response = sendMySQL2(statement);
-            System.out.println(response[0]);
-            System.out.println(response[1]);
+            String[][] response = sendMySQL2(statement);
             return response;
+
         } catch (Exception e) {
             // SQL failure
-            return new String[]{"error"};
+            return new String[][]{{"error"}};
         }
     }
 
@@ -195,7 +219,6 @@ public class dbConnection {
      * @return System time in string format dd-MM-yyyy HH:mm:ss
      * @author Bennett Andrews
      */
-
     public static String timestamp() {
         Date date = new Date();
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -210,46 +233,76 @@ public class dbConnection {
 	}
 
     /**
-	 * Executes mysql query on database and returns response
-	 * @param statement
-	 * @return
+	 * Executes mysql query on database and returns response.
+     * Response is a 2D array of the form: <p>
+     * [ [ value , value, value,  ...  ],<p>
+     *   [  value , value, value,  ...  ],<p>
+     *   [  value , value, value,  ...  ] ]<p>
+     * 
+     * NOTE: The order of the columns matters and is dependent
+     * on the SQL query.
+     * 
+     * @author Bennett Andrews
+	 * @param statement - String SQL query
+	 * @return Two dimensional array of values returned from the database query.
 	 */
-	public static String[] sendMySQL2(String statement) {
+	public static String[][] sendMySQL2(String statement) {
 		Connection conn = null;
         Statement stmt = null;
         ResultSet rs = null;
-        ResultSet returnrs = null;
+
+        int columnsNumber;
+        int rowsNumber;
 
         String[][] resultString;
         String[] rowValues;
 
         try {
-            //STEP 2: Register JDBC driver
+            // Register JDBC driver
             Class.forName(JDBC_DRIVER);
 
-            //STEP 3: Open a connection
-//            System.out.println("Connecting to a selected database...");
+            // Open a connection
             conn = DriverManager.getConnection(
                     "jdbc:mariadb://"+ DB_IP + ":" + DB_PORT + "/" + DATABASE, USER, PASS);
-//            System.out.println("Connected database successfully...");
+
+            // Generate SQL statement object
             stmt = conn.createStatement();
+
+            // Send query to the database and receive ResultSet
             rs = stmt.executeQuery(statement);
-            returnrs = rs;
+
+            // Get the number of columns using the ResultSetMetaData object
             ResultSetMetaData rsmd = rs.getMetaData();
-            int columnsNumber = rsmd.getColumnCount();
-            int rowsNumber = rs.getFetchSize();
-            resultString = new String[rs.getFetchSize()][columnsNumber];
+            columnsNumber = rsmd.getColumnCount();
+            
+            // Get the number of rows by setting the cursor to the last row,
+            // returning the row number, then setting the cursor back to 
+            // the beginning.
+            rs.last();
+            rowsNumber = rs.getRow();
+            rs.beforeFirst();
+
+            // Temporary array to store one row of values as the ResultSet is parsed.
             rowValues = new String[columnsNumber];
-            while (rs.next()) {
+
+            // Initialize return results.
+            resultString = new String[rowsNumber][columnsNumber];
+            
+            // For each row, add the row data to resultString
+            for(int j = 0; j < rowsNumber; j++) {
+
+                // Move the cursor to the next line
+                rs.next();
+
+                // For each item in the row, add a new value to the
+                // rowValues array.
                 for (int i = 1; i <= columnsNumber; i++) {
-                    if (i > 1) System.out.print(",  ");
                     String columnValue = rs.getString(i);
                     rowValues[i-1] = columnValue;
-//                    System.out.print(columnValue + " " + rsmd.getColumnName(i));
                 }
 
-
-//                System.out.println("");
+                // append rowValues to resultString
+                resultString[j] = Arrays.copyOf(rowValues, rowValues.length);
             }
             
         } catch (SQLException se) {
@@ -261,7 +314,8 @@ public class dbConnection {
             e.printStackTrace();
             return null;
         } finally {
-            //finally block used to close resources
+
+            //STEP 7: Close the connection by any means necessary.
             try {
                 if (stmt != null) {
                     conn.close();
@@ -291,98 +345,95 @@ public class dbConnection {
 
                 stmt = null;
             }
-            
-            //end finally try
-        }//end try
-//        System.out.println("Goodbye!"); 
-		
+        }
+
 		return resultString;
 	}
 	
-	/**
-	 * Executes mysql query on database and returns response
-	 * @param statement
-	 * @return
-	 */
-	public static String[] sendMySQL(String statement) {
-		Connection conn = null;
-        Statement stmt = null;
-        ResultSet rs = null;
-        ResultSet returnrs = null;
+// 	/**
+// 	 * Executes mysql query on database and returns response
+// 	 * @param statement
+// 	 * @return
+// 	 */
+// 	public static String[] sendMySQL(String statement) {
+// 		Connection conn = null;
+//         Statement stmt = null;
+//         ResultSet rs = null;
+//         ResultSet returnrs = null;
 
-        String[] resultString;
+//         String[] resultString;
 
-        try {
-            //STEP 2: Register JDBC driver
-            Class.forName(JDBC_DRIVER);
+//         try {
+//             //STEP 2: Register JDBC driver
+//             Class.forName(JDBC_DRIVER);
 
-            //STEP 3: Open a connection
-//            System.out.println("Connecting to a selected database...");
-            conn = DriverManager.getConnection(
-                    "jdbc:mariadb://"+ DB_IP + ":" + DB_PORT + "/" + DATABASE, USER, PASS);
-//            System.out.println("Connected database successfully...");
-            stmt = conn.createStatement();
-            rs = stmt.executeQuery(statement);
-            returnrs = rs;
-            ResultSetMetaData rsmd = rs.getMetaData();
-            int columnsNumber = rsmd.getColumnCount();
-            resultString = new String[columnsNumber];
-            while (rs.next()) {
-                for (int i = 1; i <= columnsNumber; i++) {
-                    if (i > 1) System.out.print(",  ");
-                    String columnValue = rs.getString(i);
-                    resultString[i-1] = columnValue;
-//                    System.out.print(columnValue + " " + rsmd.getColumnName(i));
-                }
-//                System.out.println("");
-            }
+//             //STEP 3: Open a connection
+// //            System.out.println("Connecting to a selected database...");
+//             conn = DriverManager.getConnection(
+//                     "jdbc:mariadb://"+ DB_IP + ":" + DB_PORT + "/" + DATABASE, USER, PASS);
+// //            System.out.println("Connected database successfully...");
+//             stmt = conn.createStatement();
+//             rs = stmt.executeQuery(statement);
+//             returnrs = rs;
+//             ResultSetMetaData rsmd = rs.getMetaData();
+//             int columnsNumber = rsmd.getColumnCount();
+//             resultString = new String[columnsNumber];
+//             while (rs.next()) {
+//                 for (int i = 1; i <= columnsNumber; i++) {
+//                     if (i > 1) System.out.print(",  ");
+//                     String columnValue = rs.getString(i);
+//                     resultString[i-1] = columnValue;
+// //                    System.out.print(columnValue + " " + rsmd.getColumnName(i));
+//                 }
+// //                System.out.println("");
+//             }
             
-        } catch (SQLException se) {
-            //Handle errors for JDBC
-            se.printStackTrace();
-            return null;
-        } catch (Exception e) {
-            //Handle errors for Class.forName
-            e.printStackTrace();
-            return null;
-        } finally {
-            //finally block used to close resources
-            try {
-                if (stmt != null) {
-                    conn.close();
-                }
-            } catch (SQLException se) {
-            	return null;
-            }// do nothing
-            try {
-                if (conn != null) {
-                    conn.close();
-                }
-            } catch (SQLException se) {
-                se.printStackTrace();
-            }
-            if (rs != null) {
-                try {
-                    rs.close();
-                } catch (SQLException sqlEx) { } // ignore
+//         } catch (SQLException se) {
+//             //Handle errors for JDBC
+//             se.printStackTrace();
+//             return null;
+//         } catch (Exception e) {
+//             //Handle errors for Class.forName
+//             e.printStackTrace();
+//             return null;
+//         } finally {
+//             //finally block used to close resources
+//             try {
+//                 if (stmt != null) {
+//                     conn.close();
+//                 }
+//             } catch (SQLException se) {
+//             	return null;
+//             }// do nothing
+//             try {
+//                 if (conn != null) {
+//                     conn.close();
+//                 }
+//             } catch (SQLException se) {
+//                 se.printStackTrace();
+//             }
+//             if (rs != null) {
+//                 try {
+//                     rs.close();
+//                 } catch (SQLException sqlEx) { } // ignore
 
-                rs = null;
-            }
+//                 rs = null;
+//             }
 
-            if (stmt != null) {
-                try {
-                    stmt.close();
-                } catch (SQLException sqlEx) { } // ignore
+//             if (stmt != null) {
+//                 try {
+//                     stmt.close();
+//                 } catch (SQLException sqlEx) { } // ignore
 
-                stmt = null;
-            }
+//                 stmt = null;
+//             }
             
-            //end finally try
-        }//end try
-//        System.out.println("Goodbye!"); 
+//             //end finally try
+//         }//end try
+// //        System.out.println("Goodbye!"); 
 		
-		return resultString;
-	}
+// 		return resultString;
+// 	}
 	
 	
 	/**
