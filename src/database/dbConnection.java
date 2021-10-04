@@ -10,6 +10,7 @@ import java.util.Date;
 
 import meter.InfoGET;
 import meter.InfoSET;
+import meter.Meter;
 
 /**
  * @author ZacheryHolsinger
@@ -27,6 +28,8 @@ public class dbConnection {
     static final String PASS = "pumpkin";
     static final String DATABASE = "EMMS";
     // add table name
+
+    static final int MAX_SEND_ATTEMPTS = 1;
     
     
 	/**
@@ -61,8 +64,8 @@ public class dbConnection {
         // ---------------------------------------
         //      Test getCommandsForMeter
         // ---------------------------------------
-        // String[][] test = getCommandsForMeter("AB:CD:EF:gH");
-        // System.out.println( Arrays.deepToString(test) );
+        String[][] test = getCommandsForMeter("AB:CD:EF:gH");
+        System.out.println( Arrays.deepToString(test) );
 
         // ---------------------------------------
         //      Test logSendAttempt
@@ -170,13 +173,16 @@ public class dbConnection {
      */
      public static boolean insertMeter(String Meter_id) {
 
-        String statement = "INSERT INTO Meters(Meter_id) VALUES ('" + Meter_id + "');";
+        // String statement = "INSERT INTO Meters (Meter_id) VALUES ('" + Meter_id + "');";
+        String statement = "INSERT INTO Meters (Meter_id) VALUES (\"" + Meter_id + "\")";
+        System.out.println("add sql: " + statement);
 
         try {
             sendMySQL(statement);
             return true;
         } catch (Exception e) {
             // SQL failure
+            System.out.println("Meter add unsuccessful for > " + Meter_id);
             return false;
         }
     }
@@ -213,7 +219,7 @@ public class dbConnection {
      * @return Two dimensional array of values returned from the database query.
      */
     public static String[][] getCommandsForMeter(String Meter_id) {
-        String statement = "SELECT i, Meter_id, Command FROM Actions WHERE(Meter_id='" + Meter_id + "' AND Sent='0');";
+        String statement = "SELECT i, Meter_id, Command FROM Actions WHERE(Meter_id='" + Meter_id + "' AND Send_attempts<" + MAX_SEND_ATTEMPTS + " AND Command<>'');";
 
         try {
             String[][] response = sendMySQL(statement);

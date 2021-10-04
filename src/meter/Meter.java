@@ -22,6 +22,7 @@ public class Meter {
 	Boolean SetupComplete = false; // flips to true once initialized and the startup information is gathered.
 	
 	// Information from the meter /// BEGIN ///
+	String Online = "";
 	String IP = "";
 	String Meter_id = "";
 	String LOCATION = "";
@@ -53,13 +54,41 @@ public class Meter {
 	 * [3/5/21] - made for future goal of multi-threading
 	 */
 	public static void main(String[] args) {
-		// TODO Auto-generated method stub
+		// TODO Auto-generated method stub 
 		try {
 			// Create a new meter
-			Meter Test = new Meter("192.168.1.2");
+			Meter Test = new Meter("192.168.1.5");
 
 			// test updateMeter function
 			Test.updateMeter();
+			Client client = new Client();
+			String action_index;
+			String meter_id;
+			String command;
+
+			while(true) {
+
+				String [][] command_list = dbConnection.getCommandsForMeter( Test.Meter_id );
+				System.out.println( Arrays.deepToString(command_list) );
+
+			
+				for (String[] commandset : command_list) {
+					try {
+						// commandset = [action_index, meter_id, command]
+						action_index = commandset[0];
+						meter_id = commandset[1];
+						command = commandset[2];
+						dbConnection.logSendAttempt(action_index);
+						client.Communicate(Test.IP, 80, command);
+						
+					} catch (Exception e) {
+						System.out.println("command send error");
+					}	
+				}
+
+				Thread.sleep(10_000);
+			}
+
 //			Test.removeThisMeter();
 
 		} catch (Exception e) {
@@ -130,6 +159,7 @@ public class Meter {
 	 */
 	public void updateMeter() {
 		// the first thing to is to see if the meter exists!
+		System.out.println("This Meter_id: " + this.Meter_id);
 		boolean meterInSystem = dbConnection.isMeterInDB(this.Meter_id);
 
 		System.out.println("Is meter in system? >" + meterInSystem);
@@ -149,18 +179,13 @@ public class Meter {
 		updateEA();
 		updateEU();
 		updateIP();
-		//updateLOC();
 		updateWFBV();
-		//updateIY();
-		updateID();
 		updateDBG();
-		//updateMAC();
 		updateLIGHTS();
 		updatePSWD();
 		updatePF();
 		updateRELAY();
 		updateRSTT();
-		//updateSSID();
 		updateTIME();
 		
 	}
@@ -173,9 +198,9 @@ public class Meter {
 	 * @return true/false if completed Successfully
 	 */
 	private boolean isOnline() {
-		if (isDatumUpdated("ONLINE")) { //@Bennett idk why but I had to take out the "!"
+		if (isDatumUpdated(Online)) { //@Bennett idk why but I had to take out the "!"
 			try {
-				dbConnection.setTo("ONLINE", InfoSET.Online, Meter_id);
+				dbConnection.setTo(Online, InfoSET.Online, Meter_id);
 				return true;
 
 			} catch (Exception e) {
@@ -206,26 +231,7 @@ public class Meter {
 		}
 		return true;
 	}
-	
-	/**
-	 * Updates meter ID to the database
-	 * @Zachery_Holsinger
-	 * @return true/false if completed Successfully
-	 */
-	private boolean updateID() {
-		if (isDatumUpdated(ID)) { //@Bennett idk why but I had to take out the "!"
-			try {
-				dbConnection.setTo(ID, InfoSET.Meter_id, Meter_id);
-				return true;
 
-			} catch (Exception e) {
-				// What if data update fails?
-				System.out.println("ID - false");
-				return false;
-			}
-		}
-		return true;
-	}
 
 
 	/**
@@ -247,39 +253,6 @@ public class Meter {
 		}
 		return true;
 	}
-
-
-
-	/*
-	 * NO ZACH! YOU NEED THE Meter_id TO UPDATE VALUES IN THE DATABASE! 
-	 * NOT ONLY IS IT IMPOSSIBLE TO UPDATE MACS IRL, BUT YOU CAN'T
-	 * DO IT WITH OUR CODE!
-	 * 
-	 * - bennett
-	 */
-
-	// /**
-	//  * Updates wifi Meter_id address into the database
-	//  * Adapted method from updatedIP() circa 4/22/2021
-	//  * @return true/false if completed Successfully
-	//  * 
-	//  * @Zachery_Holsinger
-	//  */
-	// private boolean updateMAC() {
-	// 	if (!isDatumUpdated(Meter_id)) {
-	// 		try {
-	// 			dbConnection.setTo(Meter_id, InfoSET.Meter_id, Meter_id);
-	// 			return true;
-
-	// 		} catch (Exception e) {
-	// 			// What if data update fails?
-	// 			System.out.println("Meter_id - false");
-	// 			return false;
-	// 		}
-	// 	}
-	// 	return true;
-	// }
-
 
 	/**
 	 * Updates the ALARM value to the database
@@ -433,7 +406,7 @@ public class Meter {
 	public boolean updateIP() {
 
 		//TODO this statement only works if evaluates to true, not sure why it is different than the rest
-		if (isDatumUpdated(IP)) {
+		if (!isDatumUpdated(IP)) {
 			try {
 				String strippedData = IP.substring(1); //@Bennett not sure why you added this substring
 				dbConnection.setTo(IP, InfoSET.IP_address, Meter_id);
@@ -634,7 +607,7 @@ public class Meter {
 	 */
 	private boolean addMeterInDB() {
 		dbConnection.insertMeter(Meter_id);
-		return false; //TODO finish this stub
+		return false;
 	}
 	
 	
@@ -664,8 +637,8 @@ public class Meter {
 //			System.out.println(Arrays.deepToString(RAWArray));
 			this.IP = RAWArray[1].replaceAll("CIFSR:STAMAC", "");
 			this.Meter_id = RAWArray[2].toUpperCase();
-//			System.out.println("IP: " + this.IP);
-//			System.out.println("Meter_id: " + this.Meter_id);
+			// System.out.println("IP: " + this.IP);
+			// System.out.println("Meter_id: " + this.Meter_id);
 		}
 		
 		String configInfo = client.Communicate(this.IP, 80, "!MOD;CONFIG*");

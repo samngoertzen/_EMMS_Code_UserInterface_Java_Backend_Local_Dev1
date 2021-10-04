@@ -30,7 +30,7 @@ public class MeterTEST {
 	String CB_VERSION = "1.3";
 	String POWERFAIL = "4/5/60";
 	String POWERDATA = "50";
-	// Dummy variables /// END ///
+	// Dummy variables /// END /// 
 
 	/**
 	 * @param args
