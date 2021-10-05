@@ -14,101 +14,107 @@ public class Client
 	private BufferedReader in;
 	private String timeOut = null;
 	
+	/**
+	 * @apiNote Sends / Receives Command, Then Closes TCP Socket to Wifi Board
+	 * @param ip
+	 * @param port Should be 80
+	 * @param command 
+	 * @returns Value of Command from Wifi Board
+	 * @author ZacheryHolsinger
+	 */
 	public String Communicate(String ip, int port, String command) {
 		clientSocket = new Socket();
-		// makes single connection
+		//// BEGIN OPEN CONNECTION ////
 		try {
 			clientSocket.connect(new InetSocketAddress(ip, port), 4000);
-			clientSocket.setSoTimeout(4000);
 			out = new PrintWriter(clientSocket.getOutputStream(), true);
 			in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-			//clientSocket.close();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			return "NoDev";
 		}
-
+		//// END OPEN CONNECTION ////
 		
-		// this waits to see if the preset print comes in for error control
-//		System.out.println("Attempting to connect");
-		String inputLine = attemptConnect();
-//		System.out.println("Good!");
-//		try {
-////			TimeUnit.SECONDS.sleep(1);
-//		} catch (InterruptedException e1) {
-//			// TODO Auto-generated catch block
-//			e1.printStackTrace();
-//		}
-		
-//		System.out.println("sending real message");
+		//// BEGIN SEND COMMAND ////
 		String response = "NODev";
 		try {
 			response = sendMessage(command);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			return timeOut ;
 		}
-		
-//		inputLine = attemptConnect();
-		
-//		System.out.println(inputLine + " Got this");
-		
-//		try {
-//			TimeUnit.SECONDS.sleep(10);
-//		} catch (InterruptedException e1) {
-//			// TODO Auto-generated catch block
-//			e1.printStackTrace();
-//		}
-		
-		
-		
-		//closes connection to prevent hanging
+		//// END SEND COMMAND ////
+				
+		//// BEGIN CLOSE CONNECTION ////
 		try {
 			stopConnection();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		//// END CLOSE CONNECTION ////
 		
 		return response;
 	} 
 
+	/**
+	 * Sends message and gets response back from Wifi Board
+	 * @param msg
+	 * @return Response from Wifi Board
+	 * @throws IOException
+	 * @author ZacheryHolsinger
+	 * @apiNote Private Function, Assumes Connection already open
+	 */
 	private String sendMessage(String msg) throws IOException {
 		out.println(msg);
-//		out.println("+++");
 		String line = "";
 		while ((line = in.readLine()) != null) {
-//			System.out.println("Got: " + line);
+			if (line.contains("\n")) {
+				break;
+			}
+			System.out.println("Got: " + line);
 			break;
 		}
-//		System.out.println(line);
-//		System.out.println("returning...");
 		return line;
 	}
 
+	/**
+	 * Closes Open TCP Connection. In Function to make more readable
+	 * @author ZacheryHolsinger
+	 * @throws IOException
+	 */
 	private void stopConnection() throws IOException {
 		in.close();
 		out.close();
 		clientSocket.close();
 	} 
 	
+	/**
+	 * Used to 'Ping' Wifi Board
+	 * @apiNote Wrapper for connSucc why did I make it so hard to understand good lord
+	 * @author ZacheryHolsinger
+	 * @deprecated No Longer Used
+	 * @return
+	 */
 	private String attemptConnect() {
 		String line = "";
 		try {
 			line = connSucc();
-//			System.out.println(line);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			return timeOut;
 		}
 		return line;
 	}
 	
-		// checks to see if its our meter
+	/**
+	 * Same as attemptConnect with with print statements (Hence the Succ) to succ you in
+	 * @deprecated Confirmed working 10/5/2021
+	 * @author ZacheryHolsinger
+	 * @return
+	 * @throws IOException
+	 */
 	private String connSucc() throws IOException {
 		String line = "";
 		while ((line = in.readLine()) != null) {
-//			System.out.println("Got: " + line);
+			System.out.println("Got: " + line);
 			break;
 		}
 		return line;

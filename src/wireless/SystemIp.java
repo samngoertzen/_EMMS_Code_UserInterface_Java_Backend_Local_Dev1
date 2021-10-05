@@ -28,7 +28,6 @@ public class SystemIp {
 	    return sysIP;
 	}
 	catch(Exception E){
-//            System.err.println("System IP Exp : "+E.getMessage());
             return null;
 	}
     }	
@@ -56,6 +55,4 @@ public class SystemIp {
             return null;
         }
     }
-
-//	System.out.println(getSystemIP);
 }
