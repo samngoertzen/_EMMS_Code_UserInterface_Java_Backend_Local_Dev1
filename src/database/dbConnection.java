@@ -260,6 +260,24 @@ public class dbConnection {
         return success;
     }
 
+    public static boolean logSuccess(String Action_index) {
+        boolean updated = false;
+
+        String now = timestamp();
+
+        String statement = "UPDATE Actions SET Sent=1, Send_time=CAST('" + now + "' AS DATETIME) WHERE (i='" + Action_index + "')";
+        
+        try {
+            sendMySQL(statement);
+            updated = true;
+        } catch (Exception e) {
+            // SQL failure
+            updated = false;
+            e.printStackTrace();
+        }
+        return updated;
+    }
+
 
     /**
      * Used to return a string format of the date. Used for MySQL timestamps.

@@ -80,6 +80,7 @@ public class Meter {
 						command = commandset[2];
 						dbConnection.logSendAttempt(action_index);
 						client.Communicate(Test.IP, 80, command);
+						dbConnection.logSuccess(action_index);
 						
 					} catch (Exception e) {
 						System.out.println("command send error");

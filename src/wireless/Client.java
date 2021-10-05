@@ -22,6 +22,7 @@ public class Client
 			clientSocket.setSoTimeout(4000);
 			out = new PrintWriter(clientSocket.getOutputStream(), true);
 			in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+			//clientSocket.close();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			return "NoDev";
