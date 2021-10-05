@@ -67,7 +67,7 @@ public class Client
 			stopConnection();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
-			return timeOut;
+			e.printStackTrace();
 		}
 		
 		return response;

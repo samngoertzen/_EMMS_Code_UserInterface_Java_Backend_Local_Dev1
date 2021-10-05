@@ -87,7 +87,7 @@ public class Meter {
 					}	
 				}
 
-				Thread.sleep(10_000);
+				Thread.sleep(300);
 			}
 
 //			Test.removeThisMeter();
