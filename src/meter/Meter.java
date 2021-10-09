@@ -57,27 +57,28 @@ public class Meter {
 		// TODO Auto-generated method stub 
 		try {
 			// Create a new meter
-			Meter Test = new Meter("192.168.1.5");
+			Meter Test = new Meter("192.168.1.254");
 
 			// test updateMeter function
 			Test.updateMeter();
 			Client client = new Client();
 			String action_index;
-			String meter_id;
 			String command;
 
 			while(true) {
 
+				// Fetch all the commands for a specific meter
 				String [][] command_list = dbConnection.getCommandsForMeter( Test.Meter_id );
-				System.out.println( Arrays.deepToString(command_list) );
-
 			
+				// For each command,
 				for (String[] commandset : command_list) {
 					try {
 						// commandset = [action_index, meter_id, command]
 						action_index = commandset[0];
-						meter_id = commandset[1];
 						command = commandset[2];
+
+						// Send the command to the Wi-Fi board and log results
+						// in the database.
 						dbConnection.logSendAttempt(action_index);
 						client.Communicate(Test.IP, 80, command);
 						dbConnection.logSuccess(action_index);
@@ -86,7 +87,7 @@ public class Meter {
 						System.out.println("command send error");
 					}	
 				}
-
+				// Wait 300 ms then repeat.
 				Thread.sleep(300);
 			}
 
