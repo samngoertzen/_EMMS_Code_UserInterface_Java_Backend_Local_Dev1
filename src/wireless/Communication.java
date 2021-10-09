@@ -22,10 +22,13 @@ import java.util.concurrent.TimeUnit;
  */
 public class Communication {
 	public static URL url = ClassLoader.getSystemResource("meterData.csv");
-//	public static URL url = getClass().getResource("meterData.csv");
-//	getClass().getResource("/MyResource").toExternalForm()
+	
+	/**
+	 * Sandbox for Communication Class
+	 * MAIN NOT USED IN REV, ONLY TO ASSIST IN DEVELOPMENT
+	 * @param args
+	 */
 	public static void main(String[] args) {
-		//		Object meters[] = meterScan.getMeters();
 				Client client = new Client();
 		//		String response;
 		//		String ip = (String) meters[0]; // THIS WILL ALWAYS PING THE FIRST LOWEST METER, SO USE FOR WHEN ONLY 1 IS PLUGGED in
@@ -46,6 +49,14 @@ public class Communication {
 				
 	}
 
+	/**
+	 * Yee ole' 'Main' from the java GUI days. 
+	 * Grabs meter data for connected meters.
+	 * @return
+	 * @throws URISyntaxException
+	 * @author ZacheryHolsinger
+	 * @deprecated Java Gui Days
+	 */
 	public static String[] startUp() throws URISyntaxException {
 		Object[] metersobj = meterScan.getMeters();
 		String[] meters;
@@ -60,24 +71,13 @@ public class Communication {
 		return meters;
 	}
 
-
+	/**
+	 * Get 2D Array of meter information from CSV file
+	 * @deprecated Java Gui Days
+	 * @return
+	 */
 	public static String[][] ReturnFileValues() {
 		File info = new File("meterData.csv");
-//		File info = new File(CurrentPath() + "data.sav");
-//		File info = null;
-//		try {
-//			info = new File(url.toURI());
-//		} catch (URISyntaxException e1) {
-//			// TODO Auto-generated catch block
-//			e1.printStackTrace();
-//		}
-//		try {
-//			info.createNewFile();
-//		} catch (IOException e) {
-//			// TODO Auto-generated catch block
-//			//			System.out.print("file operation error");
-//		}
-
 		File file= info;
 
 		// this gives you a 2-dimensional array of strings
@@ -92,7 +92,6 @@ public class Communication {
 				String[] values = line.split(",");
 				// this adds the currently parsed line to the 2-dimensional string array
 				lines.add(Arrays.asList(values));
-				//                System.out.println(Arrays.asList(values));
 			}
 
 			inputStream.close();
@@ -110,75 +109,79 @@ public class Communication {
 			int columnNo = 1;
 			for (String value: line) {
 				// CREATE Nice ARRAY BOI
-				//                System.out.println("Line " + lineNo + " Column " + columnNo + ": " + value);
 				columnNo++;
 				if (columnNo - 1 > columnNum) {
 					columnNum = columnNo;
 				}
-
 				if( lineNo > rowNum) {
 					rowNum = lineNo;
 				}
-
 			}
 			lineNo++;
 		}
-
-
 		// Actually put values in for array 
-
-		//        System.out.println(rowNum + " " + columnNum);
 		String[][] meterInfo = new String[rowNum][columnNum];
 		lineNo = 1;
 		for(List<String> line: lines) {
 			int columnNo = 1;
 			for (String value: line) {
-				// CREATE Nice ARRAY BOI
-				//                System.out.println("Line " + lineNo + " Column " + columnNo + ": " + value);
-
 				meterInfo[lineNo - 1][columnNo - 1] = value;
 				columnNo++;
 			}
 			lineNo++;
 		}
-
-		//        System.out.println(Arrays.deepToString(meterInfo));
 		return meterInfo;
 	}
 
+	/**
+	 * Implicit, Gets network info from Wifi Board
+	 * @author ZacheryHolsinger
+	 * @deprecated Java Gui Days
+	 * @param ip Meter IP
+	 * @return
+	 */
 	private static String[] fetchNewNetworkInfo(String ip) {
 		String[] meterInfo = new String[2];
 		Client client = new Client();
 		String response = client.Communicate(ip, 80, "!MOD;NETWORK*");
-//		System.out.println(response);
 		String[] blocks = response.split(",");
 		blocks[1] = blocks[1].replaceAll("[^\\d.]", "");
 		blocks[2] = blocks[2].replaceAll("OK", "");		
 		meterInfo[0] = blocks[1];
 		meterInfo[1] = blocks[2];
-//		System.out.println("Ip: " + meterInfo[0] + ", MAC: " + meterInfo[1]);
-
 		return meterInfo;
 	}
 
+	/**
+	 * Implicit, Gets Wifi Board Configuration from Wifi Board
+	 * @author ZacheryHolsinger
+	 * @deprecated Java Gui Days
+	 * @param ip Meter IP
+	 * @return Array of unparsed response from meter
+	 * @return
+	 */
 	private static String[] fetchNewMeterConfig(String ip) {
 		String[] meterInfo = new String[7];
 		Client client = new Client();
 		String response = client.Communicate(ip, 80, "!MOD;CONFIG*");
-//		System.out.println(response);
 		String[] blocks = response.split(";");
-//				System.out.println(Arrays.toString(blocks));
 		meterInfo[0] = blocks[1];
 		meterInfo[1] = blocks[2];
 		meterInfo[2] = blocks[3];
 		meterInfo[3] = blocks[4];
 		meterInfo[4] = blocks[5];
 		meterInfo[5] = blocks[6];
-//		System.out.println("Date: " + meterInfo[0] + ", Version No: " + meterInfo[1] + ", Name: " + meterInfo[2] + ", Number: " + meterInfo[3] + ", Location: " + meterInfo[4]);
-
 		return meterInfo;
 	}
 	
+	/**
+	 * Implicit, Gets Power Configuration from Wifi Board
+	 * @author ZacheryHolsinger
+	 * @deprecated Java Gui Days
+	 * @param ip Meter IP
+	 * @return Array of unparsed response from meter
+	 * @return
+	 */
 	private static String[] fetchNewPowerConfig(String ip) {
 		
 		for(int i = 0; i < 5; i ++) {
@@ -186,7 +189,7 @@ public class Communication {
 			String response = client.Communicate(ip, 80, "!Read;PwrData*");
 		if( response != null) {
 		response = response.replaceAll("!", "");
-//		response = response.replaceAll("*", "");
+		response = response.replaceAll("*", "");
 		String[] powerInfo = response.split(";");
 		System.out.println("Energy Allocation: " + powerInfo[2] + " Energy Used: " + powerInfo[3] + " Power (Watts): " + powerInfo[4]);
 		String[] powerStats = new String[3];
@@ -195,8 +198,6 @@ public class Communication {
 		powerStats[2] = powerInfo[4];
 		return powerStats;
 		} else {
-			
-			System.out.println("Got nothin that time");
 			String[] powerStats = new String[3];
 			powerStats[0] =  null;
 			powerStats[1] = null;
@@ -208,6 +209,13 @@ public class Communication {
 		return null;
 	}
 
+	/**
+	 * Implicitive, Updates CSV with new information
+	 * @author ZacheryHolsinger
+	 * @deprecated Java Gui Days
+	 * @param ip Meter IP
+	 * @return
+	 */
 	public static void updateCSVInfoNetwork(String ip) throws URISyntaxException {
 
 		String[][] CSVold = ReturnFileValues();
@@ -217,26 +225,22 @@ public class Communication {
 		String[] powerConfig = fetchNewPowerConfig(ip);
 		String debugState = meterConfig[5];
 		String MacAddr = netWorkStuff[1];
-		//		System.out.println(MacAddr);
 		boolean exists = false;
 
 		for (int i = 0; i < CSVold.length; i++ ) {
-			String MACinCSV = CSVold[i][11];
-			//			System.out.print(MACinCSV); // This is MAC Addr List
+			String MACinCSV = CSVold[i][11]; // Mac ADDR List
 			if (MACinCSV.contentEquals(MacAddr)) {
 				exists = true;
 				String old_ip = CSVold[i][3];
 				String current_ip = netWorkStuff[0];
-				//				System.out.println(old_ip + " " + current_ip);
 				if (!old_ip.equals(current_ip)) {
 					System.out.println("Replacing Ip for " + CSVold[i][4]);
 					CSVold[i][3] = current_ip;
 				}
 				CSVold[i][13] = debugState;
-//				CSVold[i][7] =  Integer.toString(100 - (Integer.parseInt(powerConfig[0]) - Integer.parseInt(powerConfig[1])) / 100);
 				CSVold[i][7] = powerConfig[1];
 				CSVold[i][8] = powerConfig[2];
-//				CSVold[i][9] = // JOE PUT EQUATION HERE
+//				CSVold[i][9] = // JOE PUT POWER EQUATION HERE
 				CSVold[i][10] = powerConfig[0];
 						
 			}
@@ -244,7 +248,6 @@ public class Communication {
 
 		if (!exists) {
 			System.out.println("Meter isn't found in System, adding...");
-
 			CSVnew = new String[CSVold.length + 1][CSVold[0].length];
 			try {
 			for(int i = 0; i < CSVold.length; i++ ) {
@@ -265,14 +268,12 @@ public class Communication {
 			CSVnew[CSVold.length][6] = meterConfig[4];
 //			CSVnew[CSVold.length][7] =  Integer.toString((Integer.parseInt(powerConfig[0]) - Integer.parseInt(powerConfig[1])) / 100);
 			CSVnew[CSVold.length][8] = powerConfig[2];
-//			CSVnew[CSVold.length][9] = // JOE PUT EQUATION HERE
+//			CSVnew[CSVold.length][9] = // JOE PUT POWER EQUATION HERE
 			CSVnew[CSVold.length][10] = powerConfig[0];
 			CSVnew[CSVold.length][11] = netWorkStuff[1];
 			CSVnew[CSVold.length][12] = "TRUE";
 			CSVnew[CSVold.length][13] = meterConfig[6];
 
-
-			//			System.out.println(Arrays.deepToString(CSVnew));
 		} else {
 
 			CSVnew = new String[CSVold.length][CSVold[0].length];
@@ -281,29 +282,12 @@ public class Communication {
 					CSVnew[i][j] = CSVold[i][j]; 
 				}
 			}
-//			CSVnew[CSVold.length][0] = "EMMS Collaboratory Team";
-//			CSVnew[CSVold.length][1] = meterConfig[0];
-//			CSVnew[CSVold.length][2] = meterConfig[1];
-//			CSVnew[CSVold.length][3] = netWorkStuff[0];
-//			CSVnew[CSVold.length][4] = meterConfig[2];
-//			CSVnew[CSVold.length][5] = meterConfig[3];
-//			CSVnew[CSVold.length][6] = meterConfig[4];
-//			CSVnew[CSVold.length][7] =  Integer.toString((Integer.parseInt(powerConfig[0]) - Integer.parseInt(powerConfig[1])) / 100);
-//			CSVnew[CSVold.length][8] = powerConfig[2];
-////			CSVnew[CSVold.length][9] = // JOE PUT EQUATION HERE
-//			CSVnew[CSVold.length][10] = powerConfig[0];
-//			CSVnew[CSVold.length][11] = netWorkStuff[1];
-//			CSVnew[CSVold.length][12] = "TRUE";
-//			CSVnew[CSVold.length][13] = meterConfig[6];
+
 		}
 
 		File file_old = new File("meterData.csv");
-//		File file_old = new File(url.toURI());
-
 		file_old.delete();
 		File file = new File("meterData.csv");
-//		File file = new File(url.toURI());
-
 		FileWriter fr;
 		for (int i = 0; i < CSVnew.length; i++) {
 			try {
@@ -315,16 +299,19 @@ public class Communication {
 				line = line.replace(", ", ",");
 				fr.write(line);
 				fr.write("\n");
-				//				System.out.println("Done Adding..");
 				fr.close();
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		} 
-
 	}
 
+	/**
+	 * Implicitive, Refreshes information from Meter into CSV
+	 * @author ZacheryHolsinger
+	 * @deprecated Java Gui Days
+	 * @param activeIps Meter IPs as array
+	 */
 	public static void refreshActive(String[] activeIps) throws URISyntaxException {
 		String[][] CSVold = ReturnFileValues(); 
 
@@ -337,7 +324,6 @@ public class Communication {
 				}
 			}
 		}
-		
 		String[][] CSVnew = new String[CSVold.length][CSVold[0].length];
 		try {
 		for(int i = 0; i < CSVold.length; i++ ) {
@@ -350,12 +336,8 @@ public class Communication {
 		}
 
 		File file_old = new File("meterData.csv");
-//		File file_old = new File(url.toURI());
-
 		file_old.delete();
 		File file = new File("meterData.csv");
-//		File file = new File(url.toURI());
-
 		FileWriter fr;
 		for (int i = 0; i < CSVnew.length; i++) {
 			try {
@@ -367,17 +349,22 @@ public class Communication {
 				line = line.replace(", ", ",");
 				fr.write(line);
 				fr.write("\n");
-				//				System.out.println("Done Adding..");
 				fr.close();
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		} 
-		//		System.out.println(Arrays.deepToString(CSVold));
 	}
 	
-// Unused, loops through and pulses all connected. Unused since Spring 2019
+	/**
+	 *  Unused, loops through and pulses all connected. Unused since Spring 2019
+	 * @param ips
+	 * @param trials
+	 * @deprecated
+	 * @author ZacheryHolsinger
+	 * @category Useless
+	 * @apiNote Specific code that got me a 97% on my Programming II Final
+	 */
 	public static void showOff(String[][] ips, int trials) {
 		Client client = new Client();
 		for( int r = 0; r < trials * 2; r ++) {
@@ -385,12 +372,11 @@ public class Communication {
 				String active = ips[i][12];
 				if(active.contains("TRUE")) {
 					String ip = ips[i][3];
-//					System.out.println(ip);
 					client.Communicate(ip, 80, "!MOD;PULSE*");
 					try {
 						TimeUnit.SECONDS.sleep(1);
 					} catch (InterruptedException e) {
-						// TODO Auto-generated catch block
+						// FOO
 					}
 				}
 			}

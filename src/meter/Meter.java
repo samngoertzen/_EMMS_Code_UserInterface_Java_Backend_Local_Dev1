@@ -51,7 +51,6 @@ public class Meter {
 	/**
 	 * @param args
 	 * Main function used for testing in the class itself
-	 * [3/5/21] - made for future goal of multi-threading
 	 */
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub 
@@ -618,52 +617,54 @@ public class Meter {
 /////////// Begin Code that Pulls information Meter-->Java////////////
 	/**
 	 * TODO
-	 * Updates the Meter instance with new Wifi Data
-	 * @return
+	 * Updates the Meter instance with Wifi Data
+	 * @apiNote Runs on Meter Class Initiation
 	 * @throws Exception if it cannot find a meter
+	 * @author ZacheryHolsinger
 	 */
 	public void getWifiInfo() throws Exception{
 		HashMap<String, String> wifiData = new HashMap<String,String>();
 		Client client = new Client();
+		//// BEGIN GET INFORMATION ////
 		// go and get network settings from the meter to see if it is actually alive
 		String networkInformationRAW = client.Communicate(this.IP, 80, "!MOD;NETWORK*");
-		// since we might get "noDev" as a response, and our expected output is a large string we can set this minimum cap
+		//since we might get "noDev" as a response, and our expected output is a large string we can set this minimum cap
 		if (networkInformationRAW.length() < 15) {
-//			System.out.println(networkInformationRAW);
+			System.out.println(networkInformationRAW);
 			throw new Exception("Meter Not Found");
 		} else {
 			String netRAW = networkInformationRAW;
-//			System.out.println("Origg: " + netRAW);
-			netRAW = netRAW.replaceAll("OK", ""); // This removes the ending OK 
+			netRAW = netRAW.replaceAll("OK", ""); // This removes the ending OK which is by default sent back
 			String[] RAWArray = netRAW.split(",");
-//			System.out.println(Arrays.deepToString(RAWArray));
 			this.IP = RAWArray[1].replaceAll("CIFSR:STAMAC", "");
 			this.Meter_id = RAWArray[2].toUpperCase();
-			// System.out.println("IP: " + this.IP);
-			// System.out.println("Meter_id: " + this.Meter_id);
 		}
 		
+		/// END GET INFORMATION ////
+		
+		/// BEGIN PARSE INFORMATION ////
 		String configInfo = client.Communicate(this.IP, 80, "!MOD;CONFIG*");
-//		System.out.println(configInfo);
 		String configParse[] = configInfo.split(";");
-//		System.out.println(Arrays.toString(configParse));
 		LOCATION = configParse[3];
 		WIFIBOARDVER = configParse[2];
 		INSTALLYEAR = configParse[1];
 		CLIENT = configParse[5];
 		ID = configParse[4];
 		DEBUG = configParse[6];
+		/// END PARSE INFORMATION
+		
 		return;
 	}
 	
 	/**
 	 * TODO
 	 * Updates the Meter instance with new data from the CB
+	 * @apiNote Unimplemented
 	 * @return
 	 */
 	public HashMap<String,String> getPowerInfo(){
 		HashMap<String, String> wifiData = new HashMap<String,String>();
-		
+		// TODO Populate power information from board. Not working as of 10/5/2021
 		
 		
 		return wifiData;

@@ -14,3 +14,7 @@ bin/database/dbConnection.class
 bin/database/dbConnection.class
 *.class
 *.class
+bin/wireless/SystemIp.class
+bin/wireless/Communication.class
+bin/wireless/Client.class
+bin/meter/Meter.class
