@@ -98,6 +98,46 @@ public class Meter {
 		}
 
 	}
+
+	public void run()
+	{
+		// Update the meter information
+		updateMeter();
+
+		Client client = new Client();
+		String action_index;
+		String command;
+
+		// Fetch all the commands for a specific meter
+		String [][] command_list = dbConnection.getCommandsForMeter( Meter_id );
+
+		// For each command,
+		for (String[] commandset : command_list) {
+
+			try {
+				// commandset = [action_index, meter_id, command]
+				action_index = commandset[0];
+				command = commandset[2];
+
+				// Send the command to the Wi-Fi board and log results
+				// in the database.
+				dbConnection.logSendAttempt(action_index);
+				client.Communicate(IP, 80, command);
+				dbConnection.logSuccess(action_index);
+				
+			} catch (Exception e) {
+				System.out.println("command send error");
+			}	
+
+			// Wait 300 ms then move to the next command.
+			try {
+				Thread.sleep(300);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	}
 	
 	
 	// LIVE DEMOS ARE DIFFICULT
