@@ -4,7 +4,6 @@ package wireless;
  *  More individual, lowest-level
  */
 import java.net.*;
-import java.util.concurrent.TimeUnit;
 import java.io.*; 
 
 public class Client
@@ -13,6 +12,8 @@ public class Client
 	private PrintWriter out;
 	private BufferedReader in;
 	private String timeOut = null;
+
+	private static final int TIMEOUT = 500;
 	
 	/**
 	 * @apiNote Sends / Receives Command, Then Closes TCP Socket to Wifi Board
@@ -22,31 +23,45 @@ public class Client
 	 * @returns Value of Command from Wifi Board
 	 * @author ZacheryHolsinger
 	 */
-	public String Communicate(String ip, int port, String command) {
+	public String communicate(String ip, int port, String command) {
 		clientSocket = new Socket();
 		//// BEGIN OPEN CONNECTION ////
-		try {
-			clientSocket.connect(new InetSocketAddress(ip, port), 4000);
+		try 
+		{
+			clientSocket.connect(new InetSocketAddress(ip, port), TIMEOUT);			
 			out = new PrintWriter(clientSocket.getOutputStream(), true);
 			in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-		} catch (IOException e) {
+		}
+		catch ( SocketTimeoutException e0 )
+		{
+			return "";
+		}
+		catch (IOException e1) 
+		{
+			e1.printStackTrace();
 			return "NoDev";
 		}
 		//// END OPEN CONNECTION ////
 		
 		//// BEGIN SEND COMMAND ////
 		String response = "NODev";
-		try {
+		try 
+		{
 			response = sendMessage(command);
-		} catch (IOException e) {
+		} 
+		catch (IOException e) 
+		{
 			return timeOut ;
 		}
 		//// END SEND COMMAND ////
 				
 		//// BEGIN CLOSE CONNECTION ////
-		try {
+		try 
+		{
 			stopConnection();
-		} catch (IOException e) {
+		} 
+		catch (IOException e) 
+		{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -85,7 +100,40 @@ public class Client
 		in.close();
 		out.close();
 		clientSocket.close();
-	} 
+	}
+
+	/**
+	 * Public method for closing connections. Handles exceptions.
+	 * Probably a duplicate of Zach's stopConnection() method,
+	 * but his private method throws exceptions instead of handling them.
+	 * @author Bennett Andrews
+	 * @return
+	 */
+	public void close()
+	{
+		try
+		{
+			if( in != null )
+			{
+				in.close();
+			}
+
+			if( out != null )
+			{
+				out.close();
+			}
+
+			if( clientSocket != null )
+			{
+				clientSocket.close();
+			}
+		}
+		catch( IOException e )
+		{
+			e.printStackTrace();
+			System.exit( -1 );
+		}
+	}
 	
 	/**
 	 * Used to 'Ping' Wifi Board

@@ -23,7 +23,7 @@ public class Meter {
 	
 	// Information from the meter /// BEGIN ///
 	String Online = "";
-	String IP = "";
+	public String IP = "";
 	String Meter_id = "";
 	String LOCATION = "";
 	String WIFIBOARDVER = "";
@@ -79,7 +79,7 @@ public class Meter {
 						// Send the command to the Wi-Fi board and log results
 						// in the database.
 						dbConnection.logSendAttempt(action_index);
-						client.Communicate(Test.IP, 80, command);
+						client.communicate(Test.IP, 80, command);
 						dbConnection.logSuccess(action_index);
 						
 					} catch (Exception e) {
@@ -122,7 +122,7 @@ public class Meter {
 				// Send the command to the Wi-Fi board and log results
 				// in the database.
 				dbConnection.logSendAttempt(action_index);
-				client.Communicate(IP, 80, command);
+				client.communicate(IP, 80, command);
 				dbConnection.logSuccess(action_index);
 				
 			} catch (Exception e) {
@@ -667,7 +667,7 @@ public class Meter {
 		Client client = new Client();
 		//// BEGIN GET INFORMATION ////
 		// go and get network settings from the meter to see if it is actually alive
-		String networkInformationRAW = client.Communicate(this.IP, 80, "!MOD;NETWORK*");
+		String networkInformationRAW = client.communicate(this.IP, 80, "!MOD;NETWORK*");
 		//since we might get "noDev" as a response, and our expected output is a large string we can set this minimum cap
 		if (networkInformationRAW.length() < 15) {
 			System.out.println(networkInformationRAW);
@@ -683,7 +683,7 @@ public class Meter {
 		/// END GET INFORMATION ////
 		
 		/// BEGIN PARSE INFORMATION ////
-		String configInfo = client.Communicate(this.IP, 80, "!MOD;CONFIG*");
+		String configInfo = client.communicate(this.IP, 80, "!MOD;CONFIG*");
 		String configParse[] = configInfo.split(";");
 		LOCATION = configParse[3];
 		WIFIBOARDVER = configParse[2];

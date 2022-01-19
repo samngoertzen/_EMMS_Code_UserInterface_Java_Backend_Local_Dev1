@@ -48,7 +48,7 @@ public class MeterTEST {
 		IP = ip;
 		Client client = new Client();
 		// go and get network settings from the meter to see if it is actually alive
-		String networkInformationRAW = client.Communicate(ip, 80, "!MOD,NETWORK*");
+		String networkInformationRAW = client.communicate(ip, 80, "!MOD,NETWORK*");
 		// since we might get "noDev" as a response, and our expected output is a large string we can set this minimum cap
 		if (networkInformationRAW.length() < 15) {
 			throw new Exception("Meter Not Found");

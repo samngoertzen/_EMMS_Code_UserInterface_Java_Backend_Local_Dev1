@@ -10,7 +10,6 @@ import java.util.Date;
 
 import meter.InfoGET;
 import meter.InfoSET;
-import meter.Meter;
 
 /**
  * @author ZacheryHolsinger
