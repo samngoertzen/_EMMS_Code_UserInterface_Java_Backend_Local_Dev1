@@ -8,26 +8,36 @@ public class Main
 {
     MeterScan meterScan;
     HashMap<String, Meter> metersConnected;
+    
 
     private static final int LOOP_DELAY = 5000;
-    // TODO const ip ranges
 
     public static void main(String[] args)
     {
         Main main = new Main();
+        long time_current;
+        long time_elapsed;
+        long delay;
 
         while( true )
         {
+            time_current = System.currentTimeMillis();
 
             main.runLoop();
 
-            try 
+            // Time the length of this loop and waith if it was too fast.
+            time_elapsed = System.currentTimeMillis() - time_current;
+            delay = LOOP_DELAY - time_elapsed;
+            if( delay > 0 )
             {
-                Thread.sleep( LOOP_DELAY );
-            } 
-            catch (InterruptedException e) 
-            {
-                e.printStackTrace();
+                try 
+                {
+                    Thread.sleep( delay );
+                } 
+                catch (InterruptedException e) 
+                {
+                    e.printStackTrace();
+                }
             }
         }   
     }
@@ -37,35 +47,41 @@ public class Main
         metersConnected = new HashMap<String, Meter>();
         meterScan = new MeterScan();
 
-        // TODO set ip ranges
+        meterScan.setN1S( 192 );
+        meterScan.setN1E( 192 );
+        meterScan.setN2S( 168 );
+        meterScan.setN2E( 168 );
+        meterScan.setN3S( 1 );
+        meterScan.setN3E( 1 );
+        meterScan.setN4S( 2 );
+        meterScan.setN4E( 15 );
     }
 
     public void runLoop()
     {
-        // iterate through metersConnected
-            // ping meter (method in Meter)
-            // if connected, run meter (another method in Meter)
-            // if disconnected, remove meter (update in database)
-
         Meter[] meterList = meterScan.getMeters( false );
         System.out.println( Arrays.deepToString( meterList ) );
 
         for( Meter meter : meterList )
         {
-            String ip = meter.IP;
 
-            if( metersConnected.containsKey( ip ) )
+            if( metersConnected.containsKey( meter.Meter_id ) )
             {
-                // TODO - if already in metersConnected, do nothing
-                System.out.println("Duplicate found: " + meter.IP );
+                System.out.println("Duplicate meter found: " + meter.Meter_id );
+                // do nothing else
             }
             else 
             {
-                // TODO - if not in metersConnected, insert
-                System.out.println("Inserting new: " + meter.IP );
+                System.out.println("Inserting new: " + meter.Meter_id );
+                metersConnected.put( meter.Meter_id, meter );
             }
         }
 
-
+        for( Meter meter : metersConnected.values() )
+        {
+            // TODO ping meter (method in Meter)
+            // TODO if connected, run meter (another method in Meter)
+            // TODO if disconnected, remove meter (update in database)
+        }
     }
 }

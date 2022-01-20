@@ -23,8 +23,8 @@ public class Meter {
 	
 	// Information from the meter /// BEGIN ///
 	String Online = "";
-	public String IP = "";
-	String Meter_id = "";
+	String IP = "";
+	public String Meter_id = "";
 	String LOCATION = "";
 	String WIFIBOARDVER = "";
 	String INSTALLYEAR = "";

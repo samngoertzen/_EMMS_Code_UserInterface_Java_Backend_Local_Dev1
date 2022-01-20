@@ -25,6 +25,12 @@ public class Client
 	 */
 	public String communicate(String ip, int port, String command) {
 		clientSocket = new Socket();
+		try {
+			System.out.println( clientSocket.getTrafficClass() );
+		} catch (SocketException e2) {
+			// TODO Auto-generated catch block
+			e2.printStackTrace();
+		}
 		//// BEGIN OPEN CONNECTION ////
 		try 
 		{
@@ -34,6 +40,7 @@ public class Client
 		}
 		catch ( SocketTimeoutException e0 )
 		{
+			System.out.println( "SocketTimeout" );
 			return "";
 		}
 		catch (IOException e1) 
@@ -78,17 +85,26 @@ public class Client
 	 * @author ZacheryHolsinger
 	 * @apiNote Private Function, Assumes Connection already open
 	 */
-	private String sendMessage(String msg) throws IOException {
+	private String sendMessage(String msg) throws IOException 
+	{
 		out.println(msg);
-		String line = "";
-		while ((line = in.readLine()) != null) {
-			if (line.contains("\n")) {
+		
+		String response = "";
+		System.out.println("Before while");
+
+		while ( in.ready() ) 
+		{
+			System.out.println("In while loop");
+			response = in.readLine();
+			if (response.contains("\n")) 
+			{
 				break;
 			}
-			System.out.println("Got: " + line);
+			System.out.println("Got: " + response);
 			break;
 		}
-		return line;
+		System.out.println("After while");
+		return response;
 	}
 
 	/**

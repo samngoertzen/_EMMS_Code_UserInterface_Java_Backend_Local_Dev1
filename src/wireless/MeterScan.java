@@ -13,30 +13,33 @@ import meter.Meter;
 
 /**
  * Scans IP's AND Confirms it with EMMS Standard to see which meters are ours
- * @author Zachery Holsinger
+ * @author Bennett Andrews and Zachery Holsinger
  *
  */
 public class MeterScan {
 
-	private static ArrayList<Meter> confirmed_meters = new ArrayList<Meter>();
+	private ArrayList<Meter> confirmed_meters = new ArrayList<Meter>();
 
-	// IPV4 scan ranges.
-	// TODO: Getters and setters
-	private static int net1_start = 192;
-	private static int net1_end   = 192;
-	private static int net2_start = 168;
-	private static int net2_end   = 168;
-	private static int net3_start = 1;
-	private static int net3_end   = 1;
-	private static int net4_start = 1;
-	private static int net4_end   = 15;
+	// Default IPV4 scan ranges.
+	// Can be overriden by setters.
+	private int net1_start = 192;
+	private int net1_end   = 192;
+	private int net2_start = 168;
+	private int net2_end   = 168;
+	private int net3_start = 1;
+	private int net3_end   = 1;
+	private int net4_start = 1;
+	private int net4_end   = 15;
 	
+
 	
 	public static void main(String[] args) 
 	{	
 		MeterScan meterScan = new MeterScan();
 		meterScan.getMeters( false );
 	}
+
+
 
 	/**
 	 * function from https://stackoverflow.com/questions/901755/how-to-get-the-ip-of-the-computer-on-linux-through-java
@@ -205,7 +208,7 @@ public class MeterScan {
 
 						response = ""; // reset response
 						response = client.communicate( ip, 80, "!Read;CBver$905*"); // TODO get real ping command
-						System.out.println( response );
+						System.out.println( "Response > " + response );
 
 						if( response == "METER" ) // TODO get better meter verification condition.
 						{
@@ -252,4 +255,176 @@ public class MeterScan {
 		meter_array = confirmed_meters.toArray( meter_array );
 		return meter_array;
 	}
+
+	/* =============================================================================== */
+	/* START IPV4 NETWORK ADDRESS RANGE SETTERS                                        */
+	/* =============================================================================== */
+
+	/**
+	 * Set the lower address bound for the first term of the network scan.
+	 * @author Bennett Andrews
+	 * @param net1_start
+	 * @return 0 on success, -1 on failure.
+	 */
+	public int setN1S( int net1_start )
+	{
+		if( (net1_start < 0) || (net1_start > 255) )
+		{
+			System.out.println( "Invalid net1_start value." );
+			return -1;
+		}
+		else
+		{
+			this.net1_start = net1_start;
+			return 0;
+		}
+	}
+
+	/**
+	 * Set the upper address bound for the first term of the network scan.
+	 * @author Bennett Andrews
+	 * @param net1_end
+	 * @return 0 on success, -1 on failure.
+	 */
+	public int setN1E( int net1_end )
+	{
+		if( (net1_end < 0) || (net1_end > 255) )
+		{
+			System.out.println( "Invalid net1_end value." );
+			return -1;
+		}
+		else
+		{
+			this.net1_end = net1_end;
+			return 0;
+		}
+	}
+
+
+
+	/**
+	 * Set the lower address bound for the second term of the network scan.
+	 * @author Bennett Andrews
+	 * @param net2_start
+	 * @return 0 on success, -1 on failure.
+	 */
+	public int setN2S( int net2_start )
+	{
+		if( (net2_start < 0) || (net2_start > 255) )
+		{
+			System.out.println( "Invalid net2_start value." );
+			return -1;
+		}
+		else
+		{
+			this.net2_start = net2_start;
+			return 0;
+		}
+	}
+
+	/**
+	 * Set the upper address bound for the second term of the network scan.
+	 * @author Bennett Andrews
+	 * @param net2_end
+	 * @return 0 on success, -1 on failure.
+	 */
+	public int setN2E( int net2_end )
+	{
+		if( (net2_end < 0) || (net2_end > 255) )
+		{
+			System.out.println( "Invalid net2_end value." );
+			return -1;
+		}
+		else
+		{
+			this.net2_end = net2_end;
+			return 0;
+		}
+	}
+
+
+	
+	/**
+	 * Set the lower address bound for the third term of the network scan.
+	 * @author Bennett Andrews
+	 * @param net3_start
+	 * @return 0 on success, -1 on failure.
+	 */
+	public int setN3S( int net3_start )
+	{
+		if( (net3_start < 0) || (net3_start > 255) )
+		{
+			System.out.println( "Invalid net3_start value." );
+			return -1;
+		}
+		else
+		{
+			this.net3_start = net3_start;
+			return 0;
+		}
+	}
+
+	/**
+	 * Set the upper address bound for the third term of the network scan.
+	 * @author Bennett Andrews
+	 * @param net3_end
+	 * @return 0 on success, -1 on failure.
+	 */
+	public int setN3E( int net3_end )
+	{
+		if( (net3_end < 0) || (net3_end > 255) )
+		{
+			System.out.println( "Invalid net3_end value." );
+			return -1;
+		}
+		else
+		{
+			this.net3_end = net3_end;
+			return 0;
+		}
+	}
+
+	/**
+	 * Set the lower address bound for the fourth term of the network scan.
+	 * @author Bennett Andrews
+	 * @param net4_start
+	 * @return 0 on success, -1 on failure.
+	 */
+	public int setN4S( int net4_start )
+	{
+		if( (net4_start < 0) || (net4_start > 255) )
+		{
+			System.out.println( "Invalid net4_start value." );
+			return -1;
+		}
+		else
+		{
+			this.net4_start = net4_start;
+			return 0;
+		}
+	}
+
+	/**
+	 * Set the upper address bound for the fourth term of the network scan.
+	 * @author Bennett Andrews
+	 * @param net4_end
+	 * @return 0 on success, -1 on failure.
+	 */
+	public int setN4E( int net4_end )
+	{
+		if( (net4_end < 0) || (net4_end > 255) )
+		{
+			System.out.println( "Invalid net4_end value." );
+			return -1;
+		}
+		else
+		{
+			this.net4_end = net4_end;
+			return 0;
+		}
+	}
+
+	/* =============================================================================== */
+	/* END IPV4 NETWORK ADDRESS RANGE SETTERS                                          */
+	/* =============================================================================== */
 }
