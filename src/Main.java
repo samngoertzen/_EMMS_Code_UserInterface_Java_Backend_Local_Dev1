@@ -53,8 +53,8 @@ public class Main
         meterScan.setN2E( 168 );
         meterScan.setN3S( 1 );
         meterScan.setN3E( 1 );
-        meterScan.setN4S( 2 );
-        meterScan.setN4E( 15 );
+        meterScan.setN4S( 7 );
+        meterScan.setN4E( 7 );
     }
 
     public void runLoop()

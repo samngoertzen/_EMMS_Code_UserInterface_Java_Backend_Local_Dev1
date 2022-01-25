@@ -13,7 +13,7 @@ public class Client
 	private BufferedReader in;
 	private String timeOut = null;
 
-	private static final int TIMEOUT = 500;
+	private static final int TIMEOUT = 4000;
 	
 	/**
 	 * @apiNote Sends / Receives Command, Then Closes TCP Socket to Wifi Board
@@ -23,20 +23,19 @@ public class Client
 	 * @returns Value of Command from Wifi Board
 	 * @author ZacheryHolsinger
 	 */
-	public String communicate(String ip, int port, String command) {
+	public String communicate(String ip, int port, String command) 
+	{
 		clientSocket = new Socket();
-		try {
-			System.out.println( clientSocket.getTrafficClass() );
-		} catch (SocketException e2) {
-			// TODO Auto-generated catch block
-			e2.printStackTrace();
-		}
+
 		//// BEGIN OPEN CONNECTION ////
 		try 
 		{
-			clientSocket.connect(new InetSocketAddress(ip, port), TIMEOUT);			
+			System.out.println("Opening socket.");
+			clientSocket.connect(new InetSocketAddress(ip, port), TIMEOUT);
+			System.out.println("Socket open.");
 			out = new PrintWriter(clientSocket.getOutputStream(), true);
 			in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+			System.out.println("Buffered reader and writer created.");
 		}
 		catch ( SocketTimeoutException e0 )
 		{
@@ -45,20 +44,20 @@ public class Client
 		}
 		catch (IOException e1) 
 		{
-			e1.printStackTrace();
-			return "NoDev";
+			System.out.println( "IO Exception" );
+			return "";
 		}
 		//// END OPEN CONNECTION ////
 		
 		//// BEGIN SEND COMMAND ////
-		String response = "NODev";
+		String response = "No response";
 		try 
 		{
 			response = sendMessage(command);
 		} 
 		catch (IOException e) 
 		{
-			return timeOut ;
+			return timeOut;
 		}
 		//// END SEND COMMAND ////
 				
@@ -88,22 +87,31 @@ public class Client
 	private String sendMessage(String msg) throws IOException 
 	{
 		out.println(msg);
-		
+
+		// Wait a while to ensure buffer is fully built before trying to read it.
+		try
+		{
+			Thread.sleep( TIMEOUT );
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+		}
+
 		String response = "";
-		System.out.println("Before while");
+		System.out.println("in ready? " + in.ready() );
 
 		while ( in.ready() ) 
 		{
-			System.out.println("In while loop");
-			response = in.readLine();
-			if (response.contains("\n")) 
+			response += (char) in.read();
+
+			if (response.contains("*"))
 			{
 				break;
 			}
-			System.out.println("Got: " + response);
-			break;
 		}
-		System.out.println("After while");
+
+		System.out.println("Got: " + response);
 		return response;
 	}
 

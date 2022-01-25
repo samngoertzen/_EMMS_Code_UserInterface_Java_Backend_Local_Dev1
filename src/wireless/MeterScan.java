@@ -30,14 +30,9 @@ public class MeterScan {
 	private int net3_end   = 1;
 	private int net4_start = 1;
 	private int net4_end   = 15;
-	
 
-	
-	public static void main(String[] args) 
-	{	
-		MeterScan meterScan = new MeterScan();
-		meterScan.getMeters( false );
-	}
+	// Meter communication port
+	private final int METER_TCP_PORT = 8001;
 
 
 
@@ -124,6 +119,9 @@ public class MeterScan {
 		return meters;
 	}
 
+	/** get my ip */
+	//  TODO
+
 	/**
 	 * Scan a specified range of IPV4 addresses to find potential meters.
 	 * Meters are stored in the confirmed_meters ArrayList for later extraction.
@@ -207,10 +205,10 @@ public class MeterScan {
 						System.out.println( "Scanning ip " + ip );
 
 						response = ""; // reset response
-						response = client.communicate( ip, 80, "!Read;CBver$905*"); // TODO get real ping command
+						response = client.communicate( ip, METER_TCP_PORT, "!Read;CBver$905*"); // TODO get real ping command
 						System.out.println( "Response > " + response );
 
-						if( response == "METER" ) // TODO get better meter verification condition.
+						if( response.equals("!Set;CBver;20190929$1300*") ) // TODO get better meter verification condition.
 						{
 							try 
 							{
@@ -223,10 +221,6 @@ public class MeterScan {
 								System.out.println("Ip " + ip + " IO error.");
 							}
 						}
-						else if( response == "NoDev" )
-						{
-							System.out.println( "Not a meter (NoDev)" );
-						}
 						else
 						{
 							System.out.println( "Not a meter." );
@@ -238,6 +232,7 @@ public class MeterScan {
 
 		client.close();
 
+		// Convert ArrayList of converted meters to standard Java array.
 		Meter[] meter_array = new Meter[ confirmed_meters.size() ];
 		meter_array = confirmed_meters.toArray( meter_array );
 
