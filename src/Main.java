@@ -69,7 +69,7 @@ public class Main
             if( metersConnected.containsKey( ID ) )
             {
                 System.out.println("Duplicate meter: " + ID );
-                // do nothing else
+                // do nothing else with duplicates
             }
             else 
             {

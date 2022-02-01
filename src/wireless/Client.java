@@ -13,12 +13,25 @@ public class Client
 	private BufferedReader in;
 	private String timeOut = null;
 
+	private final int METER_TCP_PORT = 8001;
 	private static final int TIMEOUT = 2000;
 	
 	/**
+	 * Polymorphed communicate function to use the default meter port.
+	 * @author Bennett Andrews
+	 * @param ip
+	 * @param command
+	 * @return Value of Command from WiFi board
+	 */
+	public String communicate( String ip, String command )
+	{
+		return communicate( ip, METER_TCP_PORT, command );
+	}
+
+	/**
 	 * @apiNote Sends / Receives Command, Then Closes TCP Socket to Wifi Board
 	 * @param ip
-	 * @param port Should be 80
+	 * @param port Should be 8001
 	 * @param command 
 	 * @returns Value of Command from Wifi Board
 	 * @author ZacheryHolsinger

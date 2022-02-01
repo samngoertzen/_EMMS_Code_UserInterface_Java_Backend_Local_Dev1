@@ -32,7 +32,6 @@ public class MeterScan
 	private int net4_end   = 15;
 
 	// Meter communication port
-	private final int METER_TCP_PORT = 8001;
 	private final int SEND_ATTEMPTS = 3;
 
 
@@ -219,42 +218,16 @@ public class MeterScan
 	 */
 	private boolean scan_ip4( String ipv4 ) // TODO: Test it
 	{
-		boolean is_meter = false;
-
-		// Create client.
-		Client client = new Client();
-		String response = "";
-
-		// Try to confirm that it is a meter for SEND_ATTEMPTS times
-		for( int i = 0; i < SEND_ATTEMPTS; i++ )
+		try
 		{
-			response = ""; // reset response
-			response = client.communicate( ipv4, METER_TCP_PORT, "!Read;CBver$905*"); // TODO get real ping command
-			System.out.println( "Response > " + response );
-
-			if( response.equals("!Set;CBver;20190929$1300*") ) // TODO get better meter verification condition.
-			{
-				try 
-				{
-					confirmed_meters.add( new Meter( ipv4 ) );
-					is_meter = true;
-					System.out.println("IP " + ipv4 + " confirmed as meter.");
-					break;
-				} 
-				catch (Exception e) 
-				{
-					e.printStackTrace();
-					System.out.println("Ip " + ipv4 + " IO error.");
-				}
-			}
-			else
-			{
-				System.out.println( "Not a meter." );
-			}
+			confirmed_meters.add( new Meter( ipv4 ) );
+			return true;
 		}
-
-		client.close();
-		return is_meter;
+		catch( Exception e )
+		{
+			System.out.println("Did not add " + ipv4 + " as meter.");
+			return false;
+		}
 	}
 
 	/**

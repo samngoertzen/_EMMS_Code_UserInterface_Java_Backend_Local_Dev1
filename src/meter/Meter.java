@@ -1,6 +1,3 @@
-/**
- * 
- */
 package meter;
 
 import java.util.HashMap;
@@ -12,13 +9,12 @@ import wireless.Client;
  * @author ZacheryHolsinger
  *
  */
-public class Meter {
-
+public class Meter 
+{
 	private static final char CHANGE_INDICATOR = '~'; // character appended to beginning of data when
 													  // the data is updated from the meters but has
 													  // not been pushed to the database yet.
-
-	Boolean SetupComplete = false; // flips to true once initialized and the startup information is gathered.
+	private static final int SEND_ATTEMPTS = 3;
 
 	HashMap<InfoGET, String> data =  new HashMap<InfoGET, String>();
 
@@ -32,13 +28,20 @@ public class Meter {
 	public Meter(String ip) throws Exception 
 	{
 		// First thing we do is check and see if the meter is on the network
+		// Is the meter connected?
+		if( !is_connected( ip ) )
+		{
+			Exception e = new Exception("Meter not connected.");
+			throw e;
+		}
 
 		// Next, set default data in the data map. This is primarily
 		// to initialize the map, not to set valid values.
 		defaultData();
 
-		data.put(InfoGET.Meter_id, "TEST");
-		//getWifiInfo();
+		data.put( InfoGET.IP_address, ip );
+		//data.put(InfoGET.Meter_id, "TEST");
+		//updateMeter();
 	}
 
 	/**
@@ -81,7 +84,7 @@ public class Meter {
 		// TODO test stub
 
 		System.out.println("\n\nRunning meter " + "\n\n" + data.get( InfoGET.Meter_id ) );
-		updateAll();
+		dbPushAll();
 
 		return true;
 
@@ -177,7 +180,7 @@ public class Meter {
 	 * Adds meter into DB with relevant information!
 	 * @author Bennett Andrews
 	 */
-	private boolean addMeterInDB() 
+	private boolean addMeterInDB()
 	{
 		dbConnection.insertMeter( data.get( InfoGET.Meter_id ) );
 		return false; 
@@ -187,7 +190,7 @@ public class Meter {
 	 * Deletes this meter from the database.
 	 * @author Bennett Andrews
 	 */
-	public void removeMeterInDB() 
+	public void removeMeterInDB()
 	{
 		dbConnection.deleteMeter( data.get( InfoGET.Meter_id ) );
 	}
@@ -232,25 +235,57 @@ public class Meter {
 	 * @param field
 	 * @param value
 	 */
-	public void updateAll()
+	public void dbPushAll()
 	{
 		for( InfoSET field : InfoSET.values() )
 		{
-			// TODO convert infoset to infoget
-			InfoGET converted_field = InfoGET.values()[field.ordinal()]; // TEST HERE NEXT
+			InfoGET converted_field = InfoGET.values()[ field.ordinal() ]; // TODO: Test this
 			System.out.println("InfoGET: " + converted_field.toString() );
 
 			dbConnection.setTo( data.get( converted_field ), field, data.get( InfoGET.Meter_id ) );
-
 		}
 		updateTimestamp();
 	}
 
-	// TODO: Is meter online function
-	// TODO: Update meter datum
+	/**
+	 * Tests whether this meter is online.
+	 * @author Bennett Andrews
+	 * @param ipv4 - IPV4 address of the meter to be pinged
+	 * @return true/false - is_connected/is_not_connected
+	 */
+	public static boolean is_connected( String ipv4 )
+	{
+		boolean is_meter = false;
+
+		// Create client.
+		Client client = new Client();
+		String response = "";
+
+		// Try to confirm that it is a meter for SEND_ATTEMPTS times
+		for( int i = 0; i < SEND_ATTEMPTS; i++ )
+		{
+			response = ""; // reset response
+			response = client.communicate( ipv4, "!Read;CBver$905*"); // TODO get real ping command
+			System.out.println( "Response > " + response );
+
+			if( response.equals("!Set;CBver;20190929$1300*") ) // TODO get better meter verification condition.
+			{
+				is_meter = true;
+			}
+			else
+			{
+				System.out.println( "Not a meter." );
+			}
+		}
+
+		client.close();
+		return is_meter;
+	}
 
 
-	
+	  // TODO: Update meter datum
+
+
 	// /**
 	//  * Updates if meter is online
 	//  * @Zachery_Holsinger
