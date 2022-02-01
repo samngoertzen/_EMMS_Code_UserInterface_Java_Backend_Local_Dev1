@@ -1,3 +1,4 @@
+import meter.InfoGET;
 import meter.Meter;
 import wireless.MeterScan;
 
@@ -54,34 +55,38 @@ public class Main
         meterScan.setN3S( 1 );
         meterScan.setN3E( 1 );
         meterScan.setN4S( 7 );
-        meterScan.setN4E( 7 );
+        meterScan.setN4E( 10 );
     }
 
     public void runLoop()
     {
         Meter[] meterList = meterScan.getMeters( false );
-        System.out.println( Arrays.deepToString( meterList ) );
 
         for( Meter meter : meterList )
         {
+            String ID = meter.getDatum( InfoGET.Meter_id );
 
-            if( metersConnected.containsKey( meter.Meter_id ) )
+            if( metersConnected.containsKey( ID ) )
             {
-                System.out.println("Duplicate meter found: " + meter.Meter_id );
+                System.out.println("Duplicate meter: " + ID );
                 // do nothing else
             }
             else 
             {
-                System.out.println("Inserting new: " + meter.Meter_id );
-                metersConnected.put( meter.Meter_id, meter );
+                System.out.println("Inserting new meter: " + ID );
+                metersConnected.put( ID, meter );
             }
         }
 
         for( Meter meter : metersConnected.values() )
         {
-            // TODO ping meter (method in Meter)
-            // TODO if connected, run meter (another method in Meter)
-            // TODO if disconnected, remove meter (update in database)
+            boolean connected = meter.run();
+
+            if( !connected )
+            {
+                // TODO finish this
+                // meter.remove from db();   
+            }
         }
     }
 }

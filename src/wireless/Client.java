@@ -13,7 +13,7 @@ public class Client
 	private BufferedReader in;
 	private String timeOut = null;
 
-	private static final int TIMEOUT = 4000;
+	private static final int TIMEOUT = 2000;
 	
 	/**
 	 * @apiNote Sends / Receives Command, Then Closes TCP Socket to Wifi Board
@@ -23,19 +23,16 @@ public class Client
 	 * @returns Value of Command from Wifi Board
 	 * @author ZacheryHolsinger
 	 */
-	public String communicate(String ip, int port, String command) 
+	public String communicate(String ip, int port, String command)
 	{
 		clientSocket = new Socket();
 
 		//// BEGIN OPEN CONNECTION ////
 		try 
 		{
-			System.out.println("Opening socket.");
 			clientSocket.connect(new InetSocketAddress(ip, port), TIMEOUT);
-			System.out.println("Socket open.");
 			out = new PrintWriter(clientSocket.getOutputStream(), true);
 			in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-			System.out.println("Buffered reader and writer created.");
 		}
 		catch ( SocketTimeoutException e0 )
 		{
@@ -65,10 +62,9 @@ public class Client
 		try 
 		{
 			stopConnection();
-		} 
+		}
 		catch (IOException e) 
 		{
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		//// END CLOSE CONNECTION ////
@@ -99,19 +95,11 @@ public class Client
 		}
 
 		String response = "";
-		System.out.println("in ready? " + in.ready() );
 
 		while ( in.ready() ) 
 		{
 			response += (char) in.read();
-
-			if (response.contains("*"))
-			{
-				break;
-			}
 		}
-
-		System.out.println("Got: " + response);
 		return response;
 	}
 
@@ -120,7 +108,8 @@ public class Client
 	 * @author ZacheryHolsinger
 	 * @throws IOException
 	 */
-	private void stopConnection() throws IOException {
+	private void stopConnection() throws IOException 
+	{
 		in.close();
 		out.close();
 		clientSocket.close();

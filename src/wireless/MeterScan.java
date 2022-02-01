@@ -16,8 +16,8 @@ import meter.Meter;
  * @author Bennett Andrews and Zachery Holsinger
  *
  */
-public class MeterScan {
-
+public class MeterScan 
+{
 	private ArrayList<Meter> confirmed_meters = new ArrayList<Meter>();
 
 	// Default IPV4 scan ranges.
@@ -33,6 +33,7 @@ public class MeterScan {
 
 	// Meter communication port
 	private final int METER_TCP_PORT = 8001;
+	private final int SEND_ATTEMPTS = 3;
 
 
 
@@ -92,7 +93,6 @@ public class MeterScan {
 			} 
 			catch (SocketException e) 
 			{
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 				return null;
 			}
@@ -137,23 +137,23 @@ public class MeterScan {
 	 * @return Meter[] array of all confirmed meters in the desired range.
 	 */
 	public Meter[] scan_ip4_ranges( int net1_start, int net1_end,
-										  int net2_start, int net2_end,
-										  int net3_start, int net3_end,
-										  int net4_start, int net4_end )
+									int net2_start, int net2_end,
+									int net3_start, int net3_end,
+									int net4_start, int net4_end )	// TODO: test
 	{
 		// ============================================================================
 		// START Guard clause against addresses out of range.
 		// IPV4 address parts go from 1 to 255.
-		if( net1_start < 1 ||
-			net1_end < 1   ||
-		    net2_start < 1 ||
-			net2_end < 1   ||
-			net3_start < 1 ||
-			net3_end < 1   ||
-			net4_start < 1 ||
-			net4_end < 1     )
+		if( net1_start < 0 ||
+			net1_end < 0   ||
+		    net2_start < 0 ||
+			net2_end < 0   ||
+			net3_start < 0 ||
+			net3_end < 0   ||
+			net4_start < 0 ||
+			net4_end < 0     )
 		{
-			System.out.println("Network address out of range.");
+			System.out.println("Network address out of range. (less than 0)");
 			return null;
 		}
 		else 
@@ -166,7 +166,7 @@ public class MeterScan {
 			 net4_start > 255 ||
 			 net4_end > 255     )
 		{
-			System.out.println("Network address out of range.");
+			System.out.println("Network address out of range. (greater than 255)");
 			return null;
 		}
 		// END Guard clause against addresses out of range.
@@ -184,12 +184,8 @@ public class MeterScan {
 		// ============================================================================
 
 
-
-		// Create client.
-		Client client = new Client();
-		String response = "";
-
-		// Reset confirmed meters.
+		// Reset confirmed_meters arrayList
+		confirmed_meters.clear();
 		
 
 		// I know that this looks stupid, but it loops every address in each range.
@@ -202,41 +198,63 @@ public class MeterScan {
 					for( int d = net4_start; d <= net4_end; d++ )
 					{
 						String ip = String.format( "%s.%s.%s.%s", a, b, c, d ); // format ip from ints
-						System.out.println( "Scanning ip " + ip );
+						System.out.println( "-\nScanning ip " + ip );
 
-						response = ""; // reset response
-						response = client.communicate( ip, METER_TCP_PORT, "!Read;CBver$905*"); // TODO get real ping command
-						System.out.println( "Response > " + response );
-
-						if( response.equals("!Set;CBver;20190929$1300*") ) // TODO get better meter verification condition.
-						{
-							try 
-							{
-								System.out.println("IP " + ip + " confirmed as meter.");
-								confirmed_meters.add( new Meter( ip ) );
-							} 
-							catch (Exception e) 
-							{
-								e.printStackTrace();
-								System.out.println("Ip " + ip + " IO error.");
-							}
-						}
-						else
-						{
-							System.out.println( "Not a meter." );
-						}
+						scan_ip4( ip );
 					}
 				}
 			}
 		}
 
+		return lastScan();
+	}
+
+	/**
+	 * Scans a specific IPV4 address to see if it is an EMMS meter.
+	 * If it is a meter, the meter is added to the confirmed_meters arraylist.
+	 * DOES NOT: reset confirmed_meters
+	 * @author Bennett Andrews
+	 * @param ipv4 IPV4 address to be tested
+	 * @return
+	 */
+	private boolean scan_ip4( String ipv4 ) // TODO: Test it
+	{
+		boolean is_meter = false;
+
+		// Create client.
+		Client client = new Client();
+		String response = "";
+
+		// Try to confirm that it is a meter for SEND_ATTEMPTS times
+		for( int i = 0; i < SEND_ATTEMPTS; i++ )
+		{
+			response = ""; // reset response
+			response = client.communicate( ipv4, METER_TCP_PORT, "!Read;CBver$905*"); // TODO get real ping command
+			System.out.println( "Response > " + response );
+
+			if( response.equals("!Set;CBver;20190929$1300*") ) // TODO get better meter verification condition.
+			{
+				try 
+				{
+					confirmed_meters.add( new Meter( ipv4 ) );
+					is_meter = true;
+					System.out.println("IP " + ipv4 + " confirmed as meter.");
+					break;
+				} 
+				catch (Exception e) 
+				{
+					e.printStackTrace();
+					System.out.println("Ip " + ipv4 + " IO error.");
+				}
+			}
+			else
+			{
+				System.out.println( "Not a meter." );
+			}
+		}
+
 		client.close();
-
-		// Convert ArrayList of converted meters to standard Java array.
-		Meter[] meter_array = new Meter[ confirmed_meters.size() ];
-		meter_array = confirmed_meters.toArray( meter_array );
-
-		return meter_array;
+		return is_meter;
 	}
 
 	/**

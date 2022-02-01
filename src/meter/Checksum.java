@@ -41,7 +41,8 @@ public class Checksum {
 
         int checksum = sum(command);
 
-        return command.substring(0, command.length() - 1) + "%" + checksum + "*";
+        String asterisklessCommand = command.substring(0, command.length() - 1);
+        return  asterisklessCommand + "%" + checksum + "*";
     }
 
     /**

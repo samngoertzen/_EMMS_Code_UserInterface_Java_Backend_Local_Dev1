@@ -15,11 +15,11 @@ import meter.InfoSET;
  * @author ZacheryHolsinger
  *
  */
-public class dbConnection {
-	
+public class dbConnection 
+{	
 	// Driver settings
 	static final String JDBC_DRIVER = "org.mariadb.jdbc.Driver";
-    static final String DB_IP = "153.42.35.209";
+    static final String DB_IP = "192.168.1.2"; // TODO get this device IP
     static final String DB_PORT = "3306";
     
     // Profile settings from /var/www/html/index.php
@@ -35,8 +35,8 @@ public class dbConnection {
      * MAIN is a sandbox function for testing database connection functions
 	 * @param args
 	 */
-	public static void main(String[] args) {
-
+	public static void main(String[] args) 
+    {
         // ---------------------------------------
         //      Test getFrom
         // ---------------------------------------
@@ -70,7 +70,6 @@ public class dbConnection {
         //      Test logSendAttempt
         // ---------------------------------------
         // logSendAttempt("41");
-
 	}
 
     /**
@@ -79,8 +78,8 @@ public class dbConnection {
      * @param field - InfoGET value to be converted.
      * @return Database column of type "String"
      */
-    public static String columnFromInfoGET(InfoGET field) {
-
+    public static String columnFromInfoGET(InfoGET field) 
+    {
         return field.toString();
     }
 
@@ -90,8 +89,8 @@ public class dbConnection {
      * @param field - InfoSET value to be converted.
      * @return Database column of type "String"
      */
-    public static String columnFromInfoSET(InfoSET field) {
-
+    public static String columnFromInfoSET(InfoSET field) 
+    {
         return field.toString();
     }
 
@@ -103,15 +102,20 @@ public class dbConnection {
      * @param Meter_id - The Meter_id address of the desired meter in String format.
      * @return The return is a boolean true if the set worked, false if an error occured.
      */
-    public static boolean setTo(String value, InfoSET field, String Meter_id) {
+    public static boolean setTo(String value, InfoSET field, String Meter_id) 
+    {
         boolean success = false;
         String sfield = columnFromInfoSET(field);
         String statement = "UPDATE Meters SET " + sfield + " = '" + value + "' WHERE (Meter_id='" + Meter_id + "')";
-        try {
+
+        try 
+        {
             sendMySQL(statement);
             meterTimestamp(Meter_id);
             success = true;
-        } catch (Exception e) {
+        } 
+        catch (Exception e) 
+        {
             // SQL failure
             success = false;
             e.printStackTrace();
@@ -125,13 +129,17 @@ public class dbConnection {
      * @return true/false - Timestamp update successful/unsuccessful.
      * @author Bennett Andrews
      */
-    public static boolean meterTimestamp(String Meter_id) {
+    public static boolean meterTimestamp(String Meter_id) 
+    {
         String date = timestamp();
         String statement = "UPDATE Meters SET Last_database_update='" + date + "' WHERE (Meter_id='" + Meter_id + "')";
-        try {
+        try 
+        {
             sendMySQL(statement);
             return true;
-        } catch (Exception e) {
+        } 
+        catch (Exception e) 
+        {
             // SQL failure
             return false;
         }
@@ -144,7 +152,8 @@ public class dbConnection {
      * @param Meter_id - The Meter_id address of the desired meter in String format.
      * @return The return is a ResultSet.
      */
-    public static String getFrom(InfoGET field, String Meter_id) {
+    public static String getFrom(InfoGET field, String Meter_id) 
+    {
         String sfield = columnFromInfoGET(field);
         String statement = "SELECT " + sfield + " FROM Meters" + " WHERE (Meter_id ='" + Meter_id + "')";
         String[][] results = sendMySQL(statement);
@@ -157,11 +166,12 @@ public class dbConnection {
      * @param Meter_id - Desired meter Meter_id as a string.
      * @return true/false - Meter is in the database already/Meter is not in the database.
      */
-     public static boolean isMeterInDB(String Meter_id) {
+     public static boolean isMeterInDB(String Meter_id) 
+     {
         String statement = "SELECT EXISTS (SELECT * FROM Meters WHERE(Meter_id='" + Meter_id + "'))";
         String[][] resultSet = sendMySQL(statement); //Note: this returns exactly one cell with 0 or 1.
 
-        return (resultSet[0][0].equals("1"));
+        return resultSet[0][0].equals("1");
      }
 
     /**
@@ -170,16 +180,18 @@ public class dbConnection {
      * @param Meter_id - Desired meter Meter_id as a string.
      * @return true/false - Insert was successful/unsuccessful.
      */
-     public static boolean insertMeter(String Meter_id) {
-
-        // String statement = "INSERT INTO Meters (Meter_id) VALUES ('" + Meter_id + "');";
+     public static boolean insertMeter(String Meter_id) 
+     {
         String statement = "INSERT INTO Meters (Meter_id) VALUES (\"" + Meter_id + "\")";
         System.out.println("add sql: " + statement);
 
-        try {
+        try 
+        {
             sendMySQL(statement);
             return true;
-        } catch (Exception e) {
+        } 
+        catch (Exception e) 
+        {
             // SQL failure
             System.out.println("Meter add unsuccessful for > " + Meter_id);
             return false;
@@ -192,14 +204,17 @@ public class dbConnection {
      * @param Meter_id - Desired meter Meter_id as a string.
      * @return true/false - Delete was successful/unsuccessful.
      */
-    public static boolean deleteMeter(String Meter_id) {
-
+    public static boolean deleteMeter(String Meter_id) 
+    {
         String statement = "DELETE FROM Meters WHERE(Meter_id='" + Meter_id + "');";
 
-        try {
+        try 
+        {
             sendMySQL(statement);
             return true;
-        } catch (Exception e) {
+        } 
+        catch (Exception e) 
+        {
             // SQL failure
             return false;
         }
@@ -220,11 +235,13 @@ public class dbConnection {
     public static String[][] getCommandsForMeter(String Meter_id) {
         String statement = "SELECT i, Meter_id, Command FROM Actions WHERE(Meter_id='" + Meter_id + "' AND Send_attempts<" + MAX_SEND_ATTEMPTS + " AND Command<>'');";
 
-        try {
+        try 
+        {
             String[][] response = sendMySQL(statement);
             return response;
-
-        } catch (Exception e) {
+        } 
+        catch (Exception e) 
+        {
             // SQL failure
             return new String[][]{{"error"}};
         }
@@ -241,17 +258,21 @@ public class dbConnection {
      * @param Action_index - Database index of the action to be incremented.
      * @return true/false - increment successful/increment failure
      */
-    public static boolean logSendAttempt(String Action_index) {
+    public static boolean logSendAttempt(String Action_index) 
+    {
         boolean success = false;
 
         String now = timestamp();
 
         String statement = "UPDATE Actions SET Send_attempts=Send_attempts+1, Send_time=CAST('" + now + "' AS DATETIME) WHERE (i='" + Action_index + "')";
 
-        try {
+        try 
+        {
             sendMySQL(statement);
             success = true;
-        } catch (Exception e) {
+        } 
+        catch (Exception e) 
+        {
             // SQL failure
             success = false;
             e.printStackTrace();
@@ -259,17 +280,21 @@ public class dbConnection {
         return success;
     }
 
-    public static boolean logSuccess(String Action_index) {
+    public static boolean logSuccess(String Action_index) 
+    {
         boolean updated = false;
 
         String now = timestamp();
 
         String statement = "UPDATE Actions SET Sent=1, Send_time=CAST('" + now + "' AS DATETIME) WHERE (i='" + Action_index + "')";
         
-        try {
+        try 
+        {
             sendMySQL(statement);
             updated = true;
-        } catch (Exception e) {
+        } 
+        catch (Exception e) 
+        {
             // SQL failure
             updated = false;
             e.printStackTrace();
@@ -283,18 +308,13 @@ public class dbConnection {
      * @return System time in string format dd-MM-yyyy HH:mm:ss
      * @author Bennett Andrews
      */
-    public static String timestamp() {
+    public static String timestamp() 
+    {
         Date date = new Date();
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         return formatter.format(date);
     }
-     
-	/**
-	 * Talks to Meters table in the database and gets all the meter ips!
-	 */
-	public static void updateIPs() {
-		
-	}
+    
 
     /**
 	 * Executes mysql query on database and returns response.
@@ -369,48 +389,70 @@ public class dbConnection {
                 resultString[j] = Arrays.copyOf(rowValues, rowValues.length);
             }
             
-        } catch (SQLException se) {
+        } 
+        catch (SQLException se) 
+        {
             //Handle errors for JDBC
             se.printStackTrace();
             return null;
-        } catch (Exception e) {
+        } 
+        catch (Exception e) 
+        {
             //Handle errors for Class.forName
             e.printStackTrace();
             return null;
-        } finally {
-
+        }
+        finally 
+        {
             //STEP 7: Close the connection by any means necessary.
-            try {
-                if (stmt != null) {
+            try 
+            {
+                if (stmt != null) 
+                {
                     conn.close();
                 }
-            } catch (SQLException se) {
+
+            } 
+            catch (SQLException se) 
+            {
             	return null;
             }// do nothing
-            try {
-                if (conn != null) {
+
+
+            try 
+            {
+                if (conn != null)
+                {
                     conn.close();
                 }
-            } catch (SQLException se) {
+            } 
+            catch (SQLException se) 
+            {
                 se.printStackTrace();
             }
-            if (rs != null) {
-                try {
+
+            
+            if (rs != null) 
+            {
+                try 
+                {
                     rs.close();
-                } catch (SQLException sqlEx) { } // ignore
+                } 
+                catch (SQLException sqlEx) { } // ignore
 
                 rs = null;
             }
 
             if (stmt != null) {
-                try {
+                try 
+                {
                     stmt.close();
-                } catch (SQLException sqlEx) { } // ignore
+                } 
+                catch (SQLException sqlEx) { } // ignore
 
                 stmt = null;
             }
         }
-
 		return resultString;
 	}
 	
