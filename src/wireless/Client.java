@@ -14,7 +14,7 @@ public class Client
 	private String timeOut = null;
 
 	private final int METER_TCP_PORT = 8001;
-	private static final int TIMEOUT = 2000;
+	private static final int TIMEOUT = 500;
 	
 	/**
 	 * Polymorphed communicate function to use the default meter port.
@@ -160,38 +160,4 @@ public class Client
 			System.exit( -1 );
 		}
 	}
-	
-	/**
-	 * Used to 'Ping' Wifi Board
-	 * @apiNote Wrapper for connSucc why did I make it so hard to understand good lord
-	 * @author ZacheryHolsinger
-	 * @deprecated No Longer Used
-	 * @return
-	 */
-	private String attemptConnect() {
-		String line = "";
-		try {
-			line = connSucc();
-		} catch (IOException e) {
-			return timeOut;
-		}
-		return line;
-	}
-	
-	/**
-	 * Same as attemptConnect with with print statements (Hence the Succ) to succ you in
-	 * @deprecated Confirmed working 10/5/2021
-	 * @author ZacheryHolsinger
-	 * @return
-	 * @throws IOException
-	 */
-	private String connSucc() throws IOException {
-		String line = "";
-		while ((line = in.readLine()) != null) {
-			System.out.println("Got: " + line);
-			break;
-		}
-		return line;
-	}
-
 } 

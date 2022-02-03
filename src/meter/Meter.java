@@ -1,5 +1,6 @@
 package meter;
 
+import java.io.*;
 import java.util.HashMap;
 
 import database.dbConnection;
@@ -7,15 +8,13 @@ import wireless.Client;
 
 /**
  * @author ZacheryHolsinger
- *
  */
 public class Meter 
 {
-	private static final char CHANGE_INDICATOR = '~'; // character appended to beginning of data when
-													  // the data is updated from the meters but has
-													  // not been pushed to the database yet.
+	// Number of times a command should be sent to receive a response before giving up.
 	private static final int SEND_ATTEMPTS = 3;
 
+	// Stores all meter object data relevant to live meters.
 	HashMap<InfoGET, String> data =  new HashMap<InfoGET, String>();
 
 
@@ -29,7 +28,7 @@ public class Meter
 	{
 		// First thing we do is check and see if the meter is on the network
 		// Is the meter connected?
-		if( !is_connected( ip ) )
+		if( !isConnected( ip ) )
 		{
 			Exception e = new Exception("Meter not connected.");
 			throw e;
@@ -40,9 +39,12 @@ public class Meter
 		defaultData();
 
 		data.put( InfoGET.IP_address, ip );
-		//data.put(InfoGET.Meter_id, "TEST");
-		//updateMeter();
+		update();
+		pushAllInDB();
 	}
+
+
+
 
 	/**
 	 * Writes default values to the data map. Primarily for initialization,
@@ -67,26 +69,72 @@ public class Meter
 		return data.get( field );
 	}
 
+	/**
+	 * Setter for meter information.
+	 * @author Bennett Andrews
+	 */
+	public void setDatum( InfoGET field, String value )
+	{
+		data.put( field, value );
+	}
+
+	/**
+	 * Macro for getting Meter_id because it is used frequently.
+	 * @author Bennett Andrews
+	 * @return This Meter_id
+	 */
+	public String id()
+	{
+		return getDatum( InfoGET.Meter_id );
+	}
 
 
 
 
 
+	/**
+	 * Runs the main functions of the meter. 
+	 * <p>1) Updates meter object data by fetching information from live meters.
+	 * <p>2) Pushes updates to the database.
+	 * <p>3) Fetches commands from the action table and pushes them to the live meters.
+	 * @author Bennett Andrews
+	 * @return true/false - run completed successfully/unsuccessfully
+	 */
 	public boolean run()
 	{
-		// Update the meter information
-		updateMeter();
+		System.out.println("\n\nRunning meter " + id() );
 
-		Client client = new Client();
-		String action_index;
-		String command;
+		try 
+		{
+			update();
+			pushAllInDB();
+			pushCommands();
+			return true;
+		} 
+		catch (IOException e) 
+		{
+			e.printStackTrace();
+			System.out.println("! Run failed.");
+			return false;
+		}
+	}
 
-		// TODO test stub
 
-		System.out.println("\n\nRunning meter " + "\n\n" + data.get( InfoGET.Meter_id ) );
-		dbPushAll();
 
-		return true;
+
+
+	/**
+	 * Fetches meter commands from the Action table in the database
+	 * and pushes them to live meters.
+	 * @author Bennett Andrews
+	 */
+	private void pushCommands()
+	{
+		// TODO test stub.
+
+		// Client client = new Client();
+		// String action_index;
+		// String command;
 
 		// // Fetch all the commands for a specific meter
 		// String [][] command_list = dbConnection.getCommandsForMeter( Meter_id );
@@ -119,10 +167,35 @@ public class Meter
 		// }
 	}
 
-	
 
-	
-/////////// Begin Code that Pushes information Java-->DB  ////////////
+
+
+
+	/**
+	 * Update all values stored in the data map to the database.
+	 * @author Bennett Andrews
+	 * @param field
+	 * @param value
+	 * @apiNote *!IMOPORTANT!* - This function solely relies on the fact 
+	 * that InfoSET and InfoGET are in the same order! Otherwise, Java can't convert
+	 * between enums.
+	 */
+	public void pushAllInDB()
+	{
+		for( InfoSET field : InfoSET.values() )
+		{
+			InfoGET converted_field = InfoGET.values()[ field.ordinal() ];
+			System.out.println("InfoGET: " + converted_field.toString() );
+
+			dbConnection.setTo( data.get( converted_field ), field, id() );
+		}
+
+		updateTimestampInDB();
+	}
+
+
+
+
 	
 	/**
 	 * Updates a meter for the database
@@ -130,24 +203,27 @@ public class Meter
 	 * @param value
 	 * @return
 	 */
-	public void updateMeter() 
+	public void update() throws IOException
 	{
+		System.out.println("Updating Meter_id: " + id() );
+
+		// is the meter online?
+		if( !isConnected() )
+		{
+			throw new IOException("Meter is not connected.");
+		}
+
 		// is the meter registered in the database?
-		System.out.println("Updating Meter_id: " + data.get( InfoGET.Meter_id ) );
-		boolean meterInSystem = dbConnection.isMeterInDB( data.get( InfoGET.Meter_id ) );
+		boolean meterInSystem = dbConnection.isMeterInDB( id() );
 		System.out.println("Is meter in system? >" + meterInSystem);
 
-		if(!meterInSystem) 
+		if(!meterInSystem)
 		{
 			addMeterInDB();
 		}
 
-		dbConnection.setTo( "noodle", InfoSET.Meter_password, data.get( InfoGET.Meter_id ) );
+		// TODO
 
-		//If we get to here then the meter is online
-		//isOnline();
-		/////////////////
-		
 		// updateALARM();
 		// updateCBV();
 		// updateDEBUG();
@@ -163,6 +239,8 @@ public class Meter
 		// updateRELAY();
 		// updateRSTT();
 		// updateTIME();
+
+		setDatum( InfoGET.Online, "1" );
 	}
 
 	/**
@@ -182,7 +260,7 @@ public class Meter
 	 */
 	private boolean addMeterInDB()
 	{
-		dbConnection.insertMeter( data.get( InfoGET.Meter_id ) );
+		dbConnection.insertMeter( id() );
 		return false; 
 	}
 
@@ -192,29 +270,7 @@ public class Meter
 	 */
 	public void removeMeterInDB()
 	{
-		dbConnection.deleteMeter( data.get( InfoGET.Meter_id ) );
-	}
-
-	/**
-	 * Tests to see if a meter variable has been updated in the database or not.
-	 * @author Bennett Andrews
-	 * @param datum - String literal of the testing variable.
-	 * @return true/false  - The variable is updated/The variable has not been updated.
-	 */
-	public static boolean isDatumUpdated(String datum) 
-	{
-		char firstChar;
-		try 
-		{
-			firstChar = datum.charAt(0);
-		} 
-		catch (StringIndexOutOfBoundsException e) 
-		{
-			System.out.println("Null datum");
-			return true;
-		}
-
-		return CHANGE_INDICATOR != firstChar;
+		dbConnection.deleteMeter( id() );
 	}
 
 	/**
@@ -222,42 +278,41 @@ public class Meter
 	 * to the current time.
 	 * @author Bennett Andrews
 	 */
-	public void updateTimestamp()
+	public void updateTimestampInDB()
 	{
-		dbConnection.meterTimestamp( data.get( InfoGET.Meter_id ) );
+		dbConnection.meterTimestamp( id() );
 	}
 
 	/**
-	 * Update all values stored in the data map to the database.
-	 * TODO: testing
-	 * 
+	 * Flags a meter as disconnected in the database.
 	 * @author Bennett Andrews
-	 * @param field
-	 * @param value
 	 */
-	public void dbPushAll()
+	public void setOfflineInDB()
 	{
-		for( InfoSET field : InfoSET.values() )
-		{
-			InfoGET converted_field = InfoGET.values()[ field.ordinal() ]; // TODO: Test this
-			System.out.println("InfoGET: " + converted_field.toString() );
-
-			dbConnection.setTo( data.get( converted_field ), field, data.get( InfoGET.Meter_id ) );
-		}
-		updateTimestamp();
+		dbConnection.setTo( "0", InfoSET.Online, id() );
 	}
 
 	/**
-	 * Tests whether this meter is online.
+	 * Polymorphed version of isConnected. Defaults to use "this" object ipv4.
 	 * @author Bennett Andrews
 	 * @param ipv4 - IPV4 address of the meter to be pinged
 	 * @return true/false - is_connected/is_not_connected
 	 */
-	public static boolean is_connected( String ipv4 )
+	private boolean isConnected()
+	{
+		return isConnected( getDatum( InfoGET.IP_address ) );
+	}
+
+	/**
+	 * Tests whether a meter is online at the specified IPV4 address.
+	 * @author Bennett Andrews
+	 * @param ipv4 - IPV4 address of the meter to be pinged
+	 * @return true/false - is_connected/is_not_connected
+	 */
+	public static boolean isConnected( String ipv4 )
 	{
 		boolean is_meter = false;
 
-		// Create client.
 		Client client = new Client();
 		String response = "";
 
@@ -274,7 +329,7 @@ public class Meter
 			}
 			else
 			{
-				System.out.println( "Not a meter." );
+				System.out.println( "No online meter." );
 			}
 		}
 
@@ -283,28 +338,63 @@ public class Meter
 	}
 
 
-	  // TODO: Update meter datum
 
 
-	// /**
-	//  * Updates if meter is online
-	//  * @Zachery_Holsinger
-	//  * @return true/false if completed Successfully
-	//  */
-	// private boolean isOnline() {
-	// 	if (isDatumUpdated(Online)) { //@Bennett idk why but I had to take out the "!"
-	// 		try {
-	// 			dbConnection.setTo(Online, InfoSET.Online, Meter_id);
-	// 			return true;
 
-	// 		} catch (Exception e) {
-	// 			// What if data update fails?
-	// 			System.out.println("OFFLINE - false");
-	// 			return false;
-	// 		}
-	// 	}
-	// 	return true;
-	// }
+	/**
+	 * Builds a meter command from the given arguments.
+	 * @author Bennett Andrews
+	 * @apiNote Vararg function
+	 * @param params Parameters to be converted to a command. Must be listed in order of the final command.
+	 * @return Completed command
+	 */
+	private static String commandBuilder(String... params)
+	{
+		String command = "";
+
+		command += Checksum.START_DELIMETER;
+
+		for( String param : params )
+		{
+			command += param + ";";
+		}
+
+		// replace last ';' with '*' - i.e. !Set;EnAl;3000; to !Set;EnAl;3000*
+		command = command.substring(0, command.length() - 1);
+		command += Checksum.STOP_DELIMETER;
+
+		return Checksum.convert(command);
+	}
+
+	/**
+	 * Command Board Version
+	 * <p>Updates meter object with live meter datum.
+	 * @author Bennett Andrews
+	 * @return
+	 */
+	public boolean updateCBV()
+	{
+		boolean updated = false;
+		String command = commandBuilder( "Read", "CBver" );
+		String response = "";
+		try
+		{
+			// TODO response = sendCommand();
+			// TODO parseResponse( response );
+			updated = true;
+		}
+		catch ( IOException e )
+		{
+			e.printStackTrace();
+			updated = false;
+		}
+
+		return updated;
+	}
+
+
+	// TODO: Update meter datum
+
 
 	// /**
 	//  * Updates Debug mode state to the database
@@ -372,29 +462,7 @@ public class Meter
 	// 	return true;
 	// }
 
-	// /**
-	//  * Updates the CB_VERSION value to the database
-	//  * @return true/false - Update successful/update unsuccessful
-	//  * @author Bennett Andrews
-	//  */
-	// public boolean updateCBV() {
 
-	// 	if (!isDatumUpdated(CB_VERSION)) {
-	// 		try {
-	// 			String strippedData = CB_VERSION.substring(1);
-	// 			dbConnection.setTo(strippedData, InfoSET.Firmware_version_command_board, Meter_id);
-	// 			CB_VERSION = strippedData;
-
-	// 			return true;
-
-	// 		} catch (Exception e) {
-	// 			// What if data update fails?
-	// 			System.out.println("CB_VERSION - false");
-	// 			return false;
-	// 		}
-	// 	}
-	// 	return true;
-	// }
 
 	// /**
 	//  * Updates the DEBUG value to the database
@@ -660,68 +728,4 @@ public class Meter
 	// 	}
 	// 	return true;
 	// }
-
-
-	
-
-	
-	
-/////////// End Code that Pushes information Java-->DB  ////////////
-// 						Hug Tom
-/////////// Begin Code that Pulls information Meter-->Java////////////
-	// /**
-	//  * Updates the Meter instance with Wifi Data
-	//  * @apiNote Runs on Meter Class Initiation
-	//  * @throws Exception if it cannot find a meter
-	//  * @author ZacheryHolsinger
-	//  * @depreciated - OLD WIFI BOARD
-	//  */
-	// public void getWifiInfo() throws Exception{
-	// 	HashMap<String, String> wifiData = new HashMap<String,String>();
-	// 	Client client = new Client();
-	// 	//// BEGIN GET INFORMATION ////
-	// 	// go and get network settings from the meter to see if it is actually alive
-	// 	String networkInformationRAW = client.communicate(this.IP, 80, "!MOD;NETWORK*");
-	// 	//since we might get "noDev" as a response, and our expected output is a large string we can set this minimum cap
-	// 	if (networkInformationRAW.length() < 15) {
-	// 		System.out.println(networkInformationRAW);
-	// 		throw new Exception("Meter Not Found");
-	// 	} else {
-	// 		String netRAW = networkInformationRAW;
-	// 		netRAW = netRAW.replaceAll("OK", ""); // This removes the ending OK which is by default sent back
-	// 		String[] RAWArray = netRAW.split(",");
-	// 		this.IP = RAWArray[1].replaceAll("CIFSR:STAMAC", "");
-	// 		this.Meter_id = RAWArray[2].toUpperCase();
-	// 	}
-		
-	// 	/// END GET INFORMATION ////
-		
-	// 	/// BEGIN PARSE INFORMATION ////
-	// 	String configInfo = client.communicate(this.IP, 80, "!MOD;CONFIG*");
-	// 	String configParse[] = configInfo.split(";");
-	// 	LOCATION = configParse[3];
-	// 	WIFIBOARDVER = configParse[2];
-	// 	INSTALLYEAR = configParse[1];
-	// 	CLIENT = configParse[5];
-	// 	ID = configParse[4];
-	// 	DEBUG = configParse[6];
-	// 	/// END PARSE INFORMATION
-		
-	// 	return;
-	// }
-	
-	// /**
-	//  * TODO
-	//  * Updates the Meter instance with new data from the CB
-	//  * @apiNote Unimplemented
-	//  * @return
-	//  */
-	// public HashMap<String,String> getPowerInfo(){
-	// 	HashMap<String, String> wifiData = new HashMap<String,String>();
-	// 	// TODO Populate power information from board. Not working as of 10/5/2021
-		
-		
-	// 	return wifiData;
-	// }
-/////////// End Code that Pulls information Meter-->Java////////////
 }

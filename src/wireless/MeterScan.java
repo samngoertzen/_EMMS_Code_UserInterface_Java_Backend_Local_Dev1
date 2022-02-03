@@ -22,7 +22,7 @@ public class MeterScan
 
 	// Default IPV4 scan ranges.
 	// Can be overriden by setters.
-	private int net1_start = 192;
+	private int default_net1_start = 192;
 	private int net1_end   = 192;
 	private int net2_start = 168;
 	private int net2_end   = 168;
@@ -30,10 +30,6 @@ public class MeterScan
 	private int net3_end   = 1;
 	private int net4_start = 1;
 	private int net4_end   = 15;
-
-	// Meter communication port
-	private final int SEND_ATTEMPTS = 3;
-
 
 
 	/**
@@ -44,21 +40,29 @@ public class MeterScan
 	 * @return
 	 * @throws SocketException
 	 */
-	public static InetAddress getFirstNonLoopbackAddress(boolean preferIpv4, boolean preferIPv6) throws SocketException {
+	public static InetAddress getFirstNonLoopbackAddress(boolean preferIpv4, boolean preferIPv6) throws SocketException 
+	{
 		Enumeration<NetworkInterface> en = NetworkInterface.getNetworkInterfaces();
-		while (en.hasMoreElements()) {
+		while( en.hasMoreElements() ) 
+		{
 			NetworkInterface i = (NetworkInterface) en.nextElement();
-			for (Enumeration en2 = i.getInetAddresses(); en2.hasMoreElements();) {
+			for( Enumeration en2 = i.getInetAddresses(); en2.hasMoreElements(); ) 
+			{
 				InetAddress addr = (InetAddress) en2.nextElement();
-				if (!addr.isLoopbackAddress()) {
-					if (addr instanceof Inet4Address) {
-						if (preferIPv6) {
+				if( !addr.isLoopbackAddress() ) 
+				{
+					if( addr instanceof Inet4Address ) 
+					{
+						if( preferIPv6 ) 
+						{
 							continue;
 						}
 						return addr;
 					}
-					if (addr instanceof Inet6Address) {
-						if (preferIpv4) {
+					if( addr instanceof Inet6Address ) 
+					{
+						if( preferIpv4 ) 
+						{
 							continue;
 						}
 						return addr;
@@ -109,7 +113,7 @@ public class MeterScan
 		else // do not useMyIp
 		{
 			//  use class-set variables for ipv4 host 
-			meters = scan_ip4_ranges(net1_start, net1_end, 
+			meters = scan_ip4_ranges(default_net1_start, net1_end, 
 									 net2_start, net2_end, 
 									 net3_start, net3_end, 
 									 net4_start, net4_end);
@@ -118,8 +122,7 @@ public class MeterScan
 		return meters;
 	}
 
-	/** get my ip */
-	//  TODO
+	// TODO: get my ip function
 
 	/**
 	 * Scan a specified range of IPV4 addresses to find potential meters.
@@ -211,10 +214,10 @@ public class MeterScan
 	/**
 	 * Scans a specific IPV4 address to see if it is an EMMS meter.
 	 * If it is a meter, the meter is added to the confirmed_meters arraylist.
-	 * DOES NOT: reset confirmed_meters
+	 * @apiNote DOES NOT: reset confirmed_meters
 	 * @author Bennett Andrews
 	 * @param ipv4 IPV4 address to be tested
-	 * @return
+	 * @return true/false - ipv4 is a meter/isnot a meter
 	 */
 	private boolean scan_ip4( String ipv4 ) // TODO: Test it
 	{
@@ -261,7 +264,7 @@ public class MeterScan
 		}
 		else
 		{
-			this.net1_start = net1_start;
+			this.default_net1_start = net1_start;
 			return 0;
 		}
 	}

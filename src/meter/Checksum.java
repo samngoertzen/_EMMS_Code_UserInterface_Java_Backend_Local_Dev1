@@ -1,16 +1,16 @@
 package meter;
 
-import java.util.Arrays;
+
 
 /**
  * Collection of static methods for processing meter commands and checksums.
  * @author Bennett Andrews
  */
-public class Checksum {
-
-    private static final String START_DELIMETER = "!";
-    private static final String STOP_DELIMETER = "*";
-    private static final String CHECKSUM_DELIMETER = "$";
+public class Checksum 
+{
+    public static final String START_DELIMETER = "!";
+    public static final String STOP_DELIMETER = "*";
+    public static final String CHECKSUM_DELIMETER = "$";
 
     /**
      * Verifies whether a string command is a valid meter command.

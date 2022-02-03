@@ -1,18 +1,18 @@
-import meter.InfoGET;
+import java.util.HashMap;
+
 import meter.Meter;
 import wireless.MeterScan;
 
-import java.util.Arrays;
-import java.util.HashMap;
+
 
 public class Main 
 {
     MeterScan meterScan;
     HashMap<String, Meter> metersConnected;
     
-
     private static final int LOOP_DELAY = 5000;
 
+    
     public static void main(String[] args)
     {
         Main main = new Main();
@@ -54,7 +54,7 @@ public class Main
         meterScan.setN2E( 168 );
         meterScan.setN3S( 1 );
         meterScan.setN3E( 1 );
-        meterScan.setN4S( 7 );
+        meterScan.setN4S( 8 );
         meterScan.setN4E( 10 );
     }
 
@@ -64,17 +64,16 @@ public class Main
 
         for( Meter meter : meterList )
         {
-            String ID = meter.getDatum( InfoGET.Meter_id );
 
-            if( metersConnected.containsKey( ID ) )
+            if( metersConnected.containsKey( meter.id() ) )
             {
-                System.out.println("Duplicate meter: " + ID );
+                System.out.println("Duplicate meter: " + meter.id() );
                 // do nothing else with duplicates
             }
             else 
             {
-                System.out.println("Inserting new meter: " + ID );
-                metersConnected.put( ID, meter );
+                System.out.println("Inserting new meter: " + meter.id() );
+                metersConnected.put( meter.id(), meter );
             }
         }
 
@@ -84,8 +83,9 @@ public class Main
 
             if( !connected )
             {
-                // TODO finish this
-                // meter.remove from db();   
+                System.out.println("Meter " + meter.id() + " offline. Removing.");
+                meter.setOfflineInDB();
+                metersConnected.remove( meter.id() );
             }
         }
     }
