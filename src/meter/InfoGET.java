@@ -18,7 +18,7 @@ public enum InfoGET
 	Online,
 	Online_last, 
 	Last_database_update, 
-	Energy_allcation, 
+	Energy_allocation, 
 	Energy_allocation_reset_time, 
 	Energy_used, 
 	Energy_remaining, 

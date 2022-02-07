@@ -1,6 +1,6 @@
 package meter;
 
-
+import java.util.Arrays;
 
 /**
  * Collection of static methods for processing meter commands and checksums.
@@ -11,6 +11,7 @@ public class Checksum
     public static final String START_DELIMETER = "!";
     public static final String STOP_DELIMETER = "*";
     public static final String CHECKSUM_DELIMETER = "$";
+    public static final String ARG_DELIMETER = ";";
 
     /**
      * Verifies whether a string command is a valid meter command.
@@ -18,13 +19,14 @@ public class Checksum
      * @param command Command to be verified
      * @return true/false - is a vaild command/ is not a valid command
      */
-    public static boolean valid_command( String command )
+    public static boolean isValidCommand( String command )
     {
+        boolean isValid = true;
         // Guard clause against null commands
         if ( command.length() == 0 ) 
         {
             System.out.println("Null command.");
-            return false;
+            isValid = false;
         }
 
         // Guard clause against commands missing the
@@ -32,17 +34,32 @@ public class Checksum
         if ( !command.startsWith( START_DELIMETER ) )
         {
             System.out.println("Invalid command syntax. '" + command + "' has no start delimeter.");
-            return false;
+            isValid =  false;
         }
 
         if ( !command.endsWith( STOP_DELIMETER ) )
         {
             System.out.println("Invalid command syntax. '" + command + "' has no stop delimeter.");
-            return false;
+            isValid =  false;
+        }
+
+        if( command.indexOf( ARG_DELIMETER ) > -1)
+        {
+            
+            String[] params = command.substring(1, command.length() - 1 ).split( ARG_DELIMETER );
+
+            for( String param : params )
+            {
+                if( (param == null) || ( param.equals("") ) )
+                {
+                    System.out.println("Command has null parameters.");
+                    isValid =  false;
+                }
+            }
         }
 
         // If it passes all the checks, it is a vaild command
-        return true;
+        return isValid;
     }
 
     /**
@@ -62,7 +79,7 @@ public class Checksum
     public static String convert( String command )
     {
         // Guard clause against invalid commands
-        if( !valid_command( command ) )
+        if( !isValidCommand( command ) )
         {
             return null;
         }
@@ -133,34 +150,46 @@ public class Checksum
         return checksum;
     }
 
-    public static boolean check( String command )
+    /**
+     * Verifies whether a command is valid has a valid checksum.
+     * <p>* Checks start, stop, and checksum delimeters
+     * <p>* Checks against too many delimeters
+     * <p>* Checks for potential null parameters
+     * <p>* Verifies that the command checksum is a valid numeric type that
+     * matches the checksum of the command given by sum().
+     * @author Bennett Andrews
+     * @param command Command to be checked.
+     * @return true/false - is valid/is not valid
+     * @see sum()
+     */
+    public static boolean isVerified( String command )
     {
         // Guard clause against invalid commands
-        if( !valid_command( command ) )
+        if( !isValidCommand( command ) )
         {
             System.out.println("Checksum: Invalid command.");
             return false;
         }
 
-        String[] params = command.split( "\\" + CHECKSUM_DELIMETER ); // curse you regex
+        String[] checksum_split = command.split( "\\" + CHECKSUM_DELIMETER ); // curse you regex
 
         // Guard clause against no checksum delimeter or too many checksum delimeters.
-        if( params.length != 2 )
+        if( checksum_split.length != 2 )
         {
             System.out.println("Checksum: Incorrect number of delimeters.");
             return false;
         }
 
         
-        int calculated = sum( params[0] );
+        int calculated = sum( checksum_split[0] );
         int expected = calculated + 1; // Assume that the checksum is incorrect
                                        // until the actual expected checksum is parsed.
 
-        params[1] = params[1].replaceAll("[^\\d.]", ""); // keep only numbers in the string
+        checksum_split[1] = checksum_split[1].replaceAll("[^\\d.]", ""); // keep only numbers in the string
 
         try
         {
-            expected = Integer.parseInt( params[1] );
+            expected = Integer.parseInt( checksum_split[1] );
         }
         catch( NumberFormatException e )
         {
@@ -217,23 +246,26 @@ public class Checksum
          */
         // Too many delimeters
         String response = "!Read;CBv$er$905*";
-        System.out.println( check(response) );
+        System.out.println( isVerified(response) );
 
         // Too few delimeters
         response = "!Read;CBver905*";
-        System.out.println( check(response) );
+        System.out.println( isVerified(response) );
+
+        // Null parameters
+        response = "!Read;;CBver$905*";
+        System.out.println( isVerified(response) );
 
         // Non-numeric checksum
         response = "!Read;CBver$*";
-        System.out.println( check(response) );
+        System.out.println( isVerified(response) );
 
         // Correct format, incorrect sum
         response = "!Read;CBver$904*";
-        System.out.println( check(response) );
+        System.out.println( isVerified(response) );
 
         // Correct format and sum
         response = "!Read;CBver$905*";
-        System.out.println( check(response) );
-
+        System.out.println( isVerified(response) );
     }
 }
