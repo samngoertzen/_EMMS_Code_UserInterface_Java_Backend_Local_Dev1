@@ -26,7 +26,7 @@ public class Main
 
             main.runLoop();
 
-            // Time the length of this loop and waith if it was too fast.
+            // Time the length of this loop and wait if it was too fast.
             time_elapsed = System.currentTimeMillis() - time_current;
             delay = LOOP_DELAY - time_elapsed;
             if( delay > 0 )
@@ -54,8 +54,8 @@ public class Main
         meterScan.setN2E( 168 );
         meterScan.setN3S( 1 );
         meterScan.setN3E( 1 );
-        meterScan.setN4S( 8 );
-        meterScan.setN4E( 10 );
+        meterScan.setN4S( 2 );
+        meterScan.setN4E( 4 );
     }
 
     public void runLoop()

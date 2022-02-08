@@ -72,6 +72,33 @@ public class MeterScan
 		}
 		return null;
 	}
+
+	/**
+	 * Returns the string IPV4 address for this device.
+	 * @author Bennett Andrews
+	 * @param useMyIp
+	 * @return
+	 */
+	public static String getMyIp()
+	{
+		String ip = "";
+
+		try 
+		{
+			// returns with a slash in front fo the ip. i.e. /153.168.1.1
+			// substring to get rid of the slash.
+			ip = getFirstNonLoopbackAddress(true, false).toString().substring(1);
+		} 
+		catch (SocketException e) 
+		{
+			e.printStackTrace();
+			ip = null;
+		}
+
+		/** TODO: IMPORTANT FOR FINAL JAR!!! */
+		/** RETURN IP VARIALBE INSTEAD OF HARDCODED VALUE! */
+		return "192.168.1.4";
+	}
 	
 	/**
 	 * Gets an array of all confirmed meters on the network.

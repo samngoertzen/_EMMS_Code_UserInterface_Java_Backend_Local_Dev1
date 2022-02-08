@@ -10,6 +10,7 @@ import java.util.Date;
 
 import meter.InfoGET;
 import meter.InfoSET;
+import wireless.MeterScan;
 
 /**
  * @author ZacheryHolsinger
@@ -19,7 +20,6 @@ public class dbConnection
 {	
 	// Driver settings
 	static final String JDBC_DRIVER = "org.mariadb.jdbc.Driver";
-    static final String DB_IP = "192.168.1.2"; // TODO get this device IP
     static final String DB_PORT = "3306";
     
     // Profile settings from /var/www/html/index.php
@@ -71,6 +71,8 @@ public class dbConnection
         // ---------------------------------------
         // logSendAttempt("41");
 	}
+
+
 
     /**
      * Converts the InfoGET enum to string column name in the database.
@@ -326,11 +328,15 @@ public class dbConnection
      * NOTE: The order of the columns matters and is dependent
      * on the SQL query.
      * 
+     * @author Zachary Holsinger
      * @author Bennett Andrews
 	 * @param statement - String SQL query
 	 * @return Two dimensional array of values returned from the database query.
 	 */
-	public static String[][] sendMySQL(String statement) {
+	public static String[][] sendMySQL(String statement) 
+    {
+        String DB_IP = MeterScan.getMyIp();
+
 		Connection conn = null;
         Statement stmt = null;
         ResultSet rs = null;
@@ -341,7 +347,8 @@ public class dbConnection
         String[][] resultString;
         String[] rowValues;
 
-        try {
+        try 
+        {
             // Register JDBC driver
             Class.forName(JDBC_DRIVER);
 
@@ -461,10 +468,14 @@ public class dbConnection
 	 * Tests to see if connection can be established to configured database
 	 * @return true if connection can be established
 	 */
-	public static boolean testConnection() {
+	public static boolean testConnection() 
+    {
+        String DB_IP = MeterScan.getMyIp();
+
 		Connection conn = null;
         Statement stmt = null;
-        try {
+        try 
+        {
             //STEP 2: Register JDBC driver
             Class.forName(JDBC_DRIVER);
 
@@ -473,32 +484,48 @@ public class dbConnection
             conn = DriverManager.getConnection(
                     "jdbc:mariadb://"+ DB_IP + ":" + DB_PORT + "/" + DATABASE, USER, PASS);
             System.out.println("Connected database successfully...");
-        } catch (SQLException se) {
+        } 
+        catch (SQLException se) 
+        {
             //Handle errors for JDBC
             se.printStackTrace();
             return false;
-        } catch (Exception e) {
+        } 
+        catch (Exception e) 
+        {
             //Handle errors for Class.forName
             e.printStackTrace();
             return false;
-        } finally {
+        } 
+        finally 
+        {
             //finally block used to close resources
         	//BENNETT YOU ARE AWESOME ALSO THIS COMMENT IS FOR GITHUB TESTING DELETE MEEEE
-            try {
-                if (stmt != null) {
+            try 
+            {
+                if (stmt != null) 
+                {
                     conn.close();
                 }
-            } catch (SQLException se) {
+            } 
+            catch (SQLException se) 
+            {
             	return false;
             }// do nothing
-            try {
-                if (conn != null) {
+            try 
+            {
+                if (conn != null) 
+                {
                     conn.close();
                 }
-            } catch (SQLException se) {
+            } 
+            catch (SQLException se) 
+            {
                 se.printStackTrace();
             }//end finally try
+
         }//end try
+
         System.out.println("Goodbye!"); 
 		
 		return true;

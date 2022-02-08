@@ -474,11 +474,11 @@ public class Meter
 
 				case "Alarm":
 					field = InfoGET.Alarm_enabled;
-					value = "TODO - Alarm";
+					value = "TODO - Alarm"; //  params: isAudible, 1enabled, 1energy, 2enabled, 2 energy
 
 				case "Emer":
 					field = InfoGET.Emergency_button_enabled;
-					value = "TODO - emer";
+					value = "TODO - emer"; // params: enabled, allocation
 
 				case "Lights":
 					field = InfoGET.Lights_enabled;
