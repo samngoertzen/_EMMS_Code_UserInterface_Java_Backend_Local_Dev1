@@ -17,14 +17,18 @@ public enum InfoGET
 	IP_address, 
 	Online,
 	Online_last, 
-	Last_database_update, 
 	Energy_allocation, 
 	Energy_allocation_reset_time, 
 	Energy_used, 
 	Energy_remaining, 
+	Energy_load, 
 	Energy_time_remaining, 
 	Power_failure_last, 
-	Alarm_enabled, 
+	Alarm_audible,
+	Alarm_one_enabled,
+	Alarm_one_thresh,
+	Alarm_two_enabled,
+	Alarm_two_thresh, 
 	Emergency_button_enabled, 
 	Emergency_button_allocation, 
 	Debug_enabled, 
@@ -32,9 +36,4 @@ public enum InfoGET
 	Relay_enabled, 
 	Firmware_version_command_board, 
 	Firmware_version_WiFi_board, 
-	
-	// Things not present in InfoSET
-	Meter_name,
-	Location, 
-	Install_year
 }

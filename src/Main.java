@@ -29,6 +29,7 @@ public class Main
             // Time the length of this loop and wait if it was too fast.
             time_elapsed = System.currentTimeMillis() - time_current;
             delay = LOOP_DELAY - time_elapsed;
+            
             if( delay > 0 )
             {
                 try 

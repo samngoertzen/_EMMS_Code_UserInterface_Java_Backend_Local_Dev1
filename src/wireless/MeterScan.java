@@ -97,7 +97,7 @@ public class MeterScan
 
 		/** TODO: IMPORTANT FOR FINAL JAR!!! */
 		/** RETURN IP VARIALBE INSTEAD OF HARDCODED VALUE! */
-		return "192.168.1.4";
+		return "192.168.1.2";
 	}
 	
 	/**

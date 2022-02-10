@@ -9,7 +9,6 @@ import java.util.Arrays;
 import java.util.Date;
 
 import meter.InfoGET;
-import meter.InfoSET;
 import wireless.MeterScan;
 
 /**
@@ -86,17 +85,6 @@ public class dbConnection
     }
 
     /**
-     * Converts the InfoSET enum to string column name in the database.
-     * @author Bennett Andrews
-     * @param field - InfoSET value to be converted.
-     * @return Database column of type "String"
-     */
-    public static String columnFromInfoSET(InfoSET field) 
-    {
-        return field.toString();
-    }
-
-    /**
      * An abstraction for setting information to the database.
      * @author Bennett Andrews
      * @param value - The desired string literal value. 
@@ -104,10 +92,10 @@ public class dbConnection
      * @param Meter_id - The Meter_id address of the desired meter in String format.
      * @return The return is a boolean true if the set worked, false if an error occured.
      */
-    public static boolean setTo(String value, InfoSET field, String Meter_id) 
+    public static boolean setTo(String value, InfoGET field, String Meter_id) 
     {
         boolean success = false;
-        String sfield = columnFromInfoSET(field);
+        String sfield = columnFromInfoGET(field);
         String statement = "UPDATE Meters SET " + sfield + " = '" + value + "' WHERE (Meter_id='" + Meter_id + "')";
 
         try 

@@ -40,8 +40,6 @@ public class Meter
 		defaultData();
 
 		data.put( InfoGET.IP_address, ip );
-		update();
-		pushAllInDB();
 	}
 
 
@@ -122,7 +120,7 @@ public class Meter
 			pushCommands();
 			return true;
 		} 
-		catch (IOException e) 
+		catch (Exception e) 
 		{
 			e.printStackTrace();
 			System.out.println("! Run failed.");
@@ -141,41 +139,57 @@ public class Meter
 	 */
 	private void pushCommands()
 	{
-		// TODO test stub.
+		System.out.println("\n\nPushing commands.\n\n");
 
-		// Client client = new Client();
-		// String action_index;
-		// String command;
+		Client client = new Client();
+		
 
-		// // Fetch all the commands for a specific meter
-		// String [][] command_list = dbConnection.getCommandsForMeter( Meter_id );
+		// Fetch all the commands for a specific meter
+		String [][] command_list = dbConnection.getCommandsForMeter( id() );
 
-		// // For each command,
-		// for (String[] commandset : command_list) {
 
-		// 	try {
-		// 		// commandset = [action_index, meter_id, command]
-		// 		action_index = commandset[0];
-		// 		command = commandset[2];
+		for ( String[] commandset : command_list ) 
+		{
+			// commandset = [action_index, meter_id, command]
+			String action_index = commandset[0];
+			String command = commandset[2];
 
-		// 		// Send the command to the Wi-Fi board and log results
-		// 		// in the database.
-		// 		dbConnection.logSendAttempt(action_index);
-		// 		client.communicate(IP, 8001, command);
-		// 		dbConnection.logSuccess(action_index);
+			String response = "";
+
+			dbConnection.logSendAttempt( action_index );
+
+			try 
+			{
+				for( int i = 0; i < SEND_ATTEMPTS; i++ )
+				{
+					System.out.println("Sending command " + command + " to meterid " + id() );
+					response = client.communicate( ip() , command );
+
+					if( response != "" ) break;	// Stop resending commands if we get a response
+				}
 				
-		// 	} catch (Exception e) {
-		// 		System.out.println("command send error");
-		// 	}	
+				parseResponse( response );
 
-		// 	// Wait 300 ms then move to the next command.
-		// 	try {
-		// 		Thread.sleep(300);
-		// 	} catch (InterruptedException e) {
-		// 		// TODO Auto-generated catch block
-		// 		e.printStackTrace();
-		// 	}
-		// }
+				dbConnection.logSuccess(action_index);
+				
+			} 
+			catch( Exception e ) 
+			{
+				System.out.println("command send error");
+			}	
+
+			// Wait 300 ms then move to the next command.
+			try 
+			{
+				Thread.sleep( 300 );
+			} 
+			catch( InterruptedException e ) 
+			{
+				e.printStackTrace();
+			}
+		}
+
+		client.close();
 	}
 
 
@@ -193,12 +207,9 @@ public class Meter
 	 */
 	public void pushAllInDB()
 	{
-		for( InfoSET field : InfoSET.values() )
+		for( InfoGET field : InfoGET.values() )
 		{
-			InfoGET converted_field = InfoGET.values()[ field.ordinal() ];
-			System.out.println("InfoGET: " + converted_field.toString() + " " + data.get( converted_field ) );
-
-			dbConnection.setTo( data.get( converted_field ), field, id() );
+			dbConnection.setTo( data.get( field ), field, id() );
 		}
 
 		updateTimestampInDB();
@@ -241,27 +252,11 @@ public class Meter
 		updateDatum( InfoGET.Energy_allocation_reset_time );
 		updateDatum( InfoGET.Energy_used );
 		updateDatum( InfoGET.Power_failure_last );
-		updateDatum( InfoGET.Alarm_enabled );
+		updateDatum( InfoGET.Alarm_audible ); 				// Updates ALL alarm datum
 		updateDatum( InfoGET.Emergency_button_enabled );
 		updateDatum( InfoGET.Lights_enabled );
 		updateDatum( InfoGET.Relay_enabled );
 		updateDatum( InfoGET.Firmware_version_WiFi_board );
-		
-
-		// updateALARM();
-		// updateDEBUG();
-		// updateEB();
-		// updateEA();
-		// updateEU();
-		// updateIP();
-		// updateWFBV();
-		// updateDBG();
-		// updateLIGHTS();
-		// updatePSWD();
-		// updatePF();
-		// updateRELAY();
-		// updateRSTT();
-		// updateTIME();
 
 		setDatum( InfoGET.Online, "1" );
 	}
@@ -312,7 +307,7 @@ public class Meter
 	 */
 	public void setOfflineInDB()
 	{
-		dbConnection.setTo( "0", InfoSET.Online, id() );
+		dbConnection.setTo( "0", InfoGET.Online, id() );
 	}
 
 	/**
@@ -427,8 +422,6 @@ public class Meter
 	 */
 	public void parseSetResponse( String[] params )
 	{
-		boolean validResponse = true;
-
 		System.out.println("Parsing params: " + Arrays.toString( params ) );
 
 		InfoGET field = InfoGET.Online; // default value, overridden later
@@ -439,92 +432,76 @@ public class Meter
 			switch( params[1] )
 			{
 				case "CBver":
-					field = InfoGET.Firmware_version_command_board;
-					value = params[2];
+					setDatum( InfoGET.Firmware_version_command_board, params[2] );
 					break;
 
 				case "Pass":
-					field = InfoGET.Meter_password;
-					value = params[2];
+					setDatum( InfoGET.Meter_password, params[2] );
 					break;
 
 				case "Time":
-					field = InfoGET.Meter_time;
+					field = InfoGET.Meter_time; // params 1: MM-DD-YY, 2: HH:MM:SS
 					value = "TODO - Time";
 					break;
 
 				case "EnAl":
-					field = InfoGET.Energy_allocation;
-					value = params[2];
+					setDatum( InfoGET.Energy_allocation, params[2] );
 					break;
 
 				case "RstTim":
 					field = InfoGET.Energy_allocation_reset_time;
-					value = "TODO - Time";
-					break;
-
-				case "EnUsed":
-					field = InfoGET.Energy_used;
-					value = params[2];
+					value = "TODO - Time";							// params 1: HH, 2: MM
 					break;
 
 				case "PwrFail":
-					field = InfoGET.Power_failure_last;
+					field = InfoGET.Power_failure_last; // TODO NOT WORKING
 					value = "TODO - time";
+					break;
 
 				case "Alarm":
-					field = InfoGET.Alarm_enabled;
-					value = "TODO - Alarm"; //  params: isAudible, 1enabled, 1energy, 2enabled, 2 energy
+					setDatum( InfoGET.Alarm_audible, (params[2].equals("On")) ? "1" : "0" );
+					setDatum( InfoGET.Alarm_one_enabled, (params[3].equals("On")) ? "1" : "0" );
+					setDatum( InfoGET.Alarm_one_thresh, params[4] );
+					setDatum( InfoGET.Alarm_two_enabled, (params[5].equals("On")) ? "1" : "0" );
+					setDatum( InfoGET.Alarm_two_thresh, params[6] );
+					break;
 
 				case "Emer":
-					field = InfoGET.Emergency_button_enabled;
-					value = "TODO - emer"; // params: enabled, allocation
+					setDatum( InfoGET.Emergency_button_enabled, (params[2].equals("On")) ? "1" : "0" );
+					setDatum( InfoGET.Emergency_button_allocation, params[3] );
+					break;
 
-				case "Lights":
-					field = InfoGET.Lights_enabled;
-					value = params[2];
+				case "Lights": // NOT VALID
+					setDatum( InfoGET.Lights_enabled, (params[2].equals("On")) ? "1" : "0" );
+					break;
 
 				case "Relay":
-					field = InfoGET.Relay_enabled;
-					value = params[2];
+					setDatum( InfoGET.Relay_enabled, (params[2].equals("On")) ? "1" : "0" );
+					break;
+
+				case "PwrData":
+					// setDatum( InfoGET.Emergency_buffer, params[2] );
+					setDatum( InfoGET.Energy_used, params[3] );
+					setDatum( InfoGET.Energy_load, params[4] );
+					break;
+
+				// case "Stat":
 
 				// TODO add more cases
 
 				default:
-					validResponse = false;
 					break;
 			}
 		}
 		catch( NullPointerException e )
 		{
 			System.out.println("Invalid Set command.");
-			validResponse = false;
-		}
-
-		if( validResponse )
-		{
-			System.out.println("Setting field " + field + " to " + value);
-			setDatum( field, value );
 		}
 
 		return;
 	}
 
 
-
-
-
-
-
-	/**
-	 * Command Board Version
-	 * <p>Updates meter object with live meter datum.
-	 * @author Bennett Andrews
-	 */
-	public void updateCBV()
-	{
-		updateDatum( InfoGET.Firmware_version_command_board );
-	}
 
 	/**
 	 * Helper function to update a specific field of the meter 
@@ -538,6 +515,10 @@ public class Meter
 
 		switch( field )
 		{
+			case Meter_id:
+				datum = "";
+				break;
+
 			case Meter_password:
 				datum = "Pass";
 				break;
@@ -555,24 +536,48 @@ public class Meter
 				break;
 			
 			case Energy_used:
-				datum = "EnUsed";
+				datum = "PwrData";
+				break;
+
+			case Energy_load:
+				datum = "PwrData";
 				break;
 			
 			case Power_failure_last:
 				datum = "PwrFail";
 				break;
 			
-			case Alarm_enabled:
+			case Alarm_audible:
 				datum = "Alarm";
 				break;
 			
+			case Alarm_one_enabled:
+				datum = "Alarm";
+				break;
+
+			case Alarm_one_thresh:
+				datum = "Alarm";
+				break;
+
+			case Alarm_two_enabled:
+				datum = "Alarm";
+				break;
+
+			case Alarm_two_thresh:
+				datum = "Alarm";
+				break;
+
 			case Emergency_button_enabled:
 				datum = "Emer";
 				break;
 
-			case Lights_enabled:
-				datum = "Lights";
+			case Emergency_button_allocation:
+				datum = "Emer";
 				break;
+
+			// case Lights_enabled: // NOT VALID CURRENTLY
+			// 	datum = "Lights";
+			// 	break;
 
 			case Relay_enabled:
 				datum = "Relay";
@@ -582,9 +587,7 @@ public class Meter
 				datum = "CBver";
 				break;
 
-			// case: ?? watts
-			// case: ?? stat
-			// case: ?? pwrdata
+			// TODO case: ?? stat
 
 			default:
 				System.out.println("InfoGET value not available for update.");
@@ -608,350 +611,9 @@ public class Meter
 			}
 		}
 		
-
 		System.out.println("Received: " + response );
-
 		parseResponse( response );
 
 		return;
 	}
-
-	
-
-
-	// TODO: Update meter datum
-
-
-	// /**
-	//  * Updates Debug mode state to the database
-	//  * @Zachery_Holsinger
-	//  * @return true/false if completed Successfully
-	//  */
-	// private boolean updateDBG() {
-	// 	if (isDatumUpdated(DEBUG)) { //@Bennett idk why but I had to take out the "!"
-	// 		try {
-	// 			dbConnection.setTo(DEBUG, InfoSET.Debug_enabled, Meter_id);
-	// 			return true;
-
-	// 		} catch (Exception e) {
-	// 			// What if data update fails?
-	// 			System.out.println("DEBUG - false");
-	// 			return false;
-	// 		}
-	// 	}
-	// 	return true;
-	// }
-
-
-
-	// /**
-	//  * Updates meter wifi board version to to the database
-	//  * @Zachery_Holsinger
-	//  * @return true/false if completed Successfully
-	//  */
-	// private boolean updateWFBV() {
-	// 	if (isDatumUpdated(WIFIBOARDVER)) { //@Bennett idk why but I had to take out the "!"
-	// 		try {
-	// 			dbConnection.setTo(WIFIBOARDVER, InfoSET.Firmware_version_WiFi_board, Meter_id);
-	// 			return true;
-
-	// 		} catch (Exception e) {
-	// 			// What if data update fails?
-	// 			System.out.println("WIFIBOARDVER - false");
-	// 			return false;
-	// 		}
-	// 	}
-	// 	return true;
-	// }
-
-	// /**
-	//  * Updates the ALARM value to the database
-	//  * @return true/false - Update successful/update unsuccessful
-	//  * @author Bennett Andrews
-	//  */
-	// public boolean updateALARM() {
-
-	// 	if (!isDatumUpdated(ALARM)) {
-	// 		try {
-	// 			String strippedData = ALARM.substring(1);
-	// 			dbConnection.setTo(strippedData, InfoSET.Alarm_enabled, Meter_id);
-	// 			ALARM = strippedData;
-
-	// 			return true;
-
-	// 		} catch (Exception e) {
-	// 			// What if data update fails?
-	// 			System.out.println("ALARM - false");
-	// 			return false;
-	// 		}
-	// 	}
-	// 	return true;
-	// }
-
-
-
-	// /**
-	//  * Updates the DEBUG value to the database
-	//  * @return true/false - Update successful/update unsuccessful
-	//  * @author Bennett Andrews
-	//  */
-	// public boolean updateDEBUG() {
-
-	// 	if (!isDatumUpdated(DEBUG)) {
-	// 		try {
-	// 			String strippedData = DEBUG.substring(1);
-	// 			dbConnection.setTo(strippedData, InfoSET.Debug_enabled, Meter_id);
-	// 			DEBUG = strippedData;
-
-	// 			return true;
-
-	// 		} catch (Exception e) {
-	// 			// What if data update fails?
-	// 			System.out.println("DEBUG - false");
-	// 			return false;
-	// 		}
-	// 	}
-	// 	return true;
-	// }
-
-	// /**
-	//  * Updates the EMERGENCYBUTTON value to the database
-	//  * @return true/false - Update successful/update unsuccessful
-	//  * @author Bennett Andrews
-	//  */
-	//  public boolean updateEB() {
-
-	// 	if (!isDatumUpdated(EMERGENCYBUTTON)) {
-	// 		try {
-	// 			String strippedData = EMERGENCYBUTTON.substring(1);
-	// 			dbConnection.setTo(strippedData, InfoSET.Emergency_button_enabled, Meter_id);
-	// 			EMERGENCYBUTTON = strippedData;
-
-	// 			return true;
-
-	// 		} catch (Exception e) {
-	// 			// What if data update fails?
-	// 			System.out.println("EMERGENCYBUTTON - false");
-	// 			return false;
-	// 		}
-	// 	}
-	// 	return true;
-	// }
-
-	// /**
-	//  * Updates the ENERGYALLOCATION value to the database
-	//  * @return true/false - Update successful/update unsuccessful
-	//  * @author Bennett Andrews
-	//  */
-	// public boolean updateEA() {
-
-	// 	if (!isDatumUpdated(ENERGYALLOCATION)) {
-	// 		try {
-	// 			String strippedData = ENERGYALLOCATION.substring(1);
-	// 			dbConnection.setTo(strippedData, InfoSET.Energy_allocation, Meter_id);
-	// 			ENERGYALLOCATION = strippedData;
-
-	// 			return true;
-
-	// 		} catch (Exception e) {
-	// 			// What if data update fails?
-	// 			System.out.println("ENERGYALLOCATION - false");
-	// 			return false;
-	// 		}
-	// 	}
-	// 	return true;
-	// }
-
-	// /**
-	//  * Updates the ENERGY_USED value to the database
-	//  * @return true/false - Update successful/update unsuccessful
-	//  * @author Bennett Andrews
-	//  */
-	// public boolean updateEU() {
-
-	// 	if (!isDatumUpdated(ENERGY_USED)) {
-	// 		try {
-	// 			String strippedData = ENERGY_USED.substring(1);
-	// 			dbConnection.setTo(strippedData, InfoSET.Energy_used, Meter_id);
-	// 			ENERGY_USED = strippedData;
-
-	// 			return true;
-
-	// 		} catch (Exception e) {
-	// 			// What if data update fails?
-	// 			System.out.println("ENERGY_USED - false");
-	// 			return false;
-	// 		}
-	// 	}
-	// 	return true;
-	// }
-
-	// /**
-	//  * Updates the IP value to the database
-	//  * @return true/false - Update successful/update unsuccessful
-	//  * @author Bennett Andrews
-	//  */
-	// public boolean updateIP() {
-
-	// 	//TODO this statement only works if evaluates to true, not sure why it is different than the rest
-	// 	if (!isDatumUpdated(IP)) {
-	// 		try {
-	// 			String strippedData = IP.substring(1); //@Bennett not sure why you added this substring
-	// 			dbConnection.setTo(IP, InfoSET.IP_address, Meter_id);
-	// 			IP = strippedData;
-
-	// 			return true;
-
-	// 		} catch (Exception e) {
-	// 			// What if data update fails?
-	// 			System.out.println("IP - false");
-	// 			return false;
-	// 		}
-	// 	}
-	// 	return true;
-	// }
-
-	// /**
-	//  * Updates the LIGHTS value to the database
-	//  * @return true/false - Update successful/update unsuccessful
-	//  * @author Bennett Andrews
-	//  */
-	// public boolean updateLIGHTS() {
-
-	// 	if (!isDatumUpdated(LIGHTS)) {
-	// 		try {
-	// 			String strippedData = LIGHTS.substring(1);
-	// 			dbConnection.setTo(strippedData, InfoSET.Lights_enabled, Meter_id);
-	// 			LIGHTS = strippedData;
-
-	// 			return true;
-
-	// 		} catch (Exception e) {
-	// 			// What if data update fails?
-	// 			System.out.println("LIGHTS - false");
-	// 			return false;
-	// 		}
-	// 	}
-	// 	return true;
-	// }
-
-	// /**
-	//  * Updates the PASSWORD value to the database
-	//  * @return true/false - Update successful/update unsuccessful
-	//  * @author Bennett Andrews
-	//  */
-	// public boolean updatePSWD() {
-
-	// 	if (!isDatumUpdated(PASSWORD)) {
-	// 		try {
-	// 			String strippedData = PASSWORD.substring(1);
-	// 			dbConnection.setTo(strippedData, InfoSET.Meter_password, Meter_id);
-	// 			PASSWORD = strippedData;
-
-	// 			return true;
-
-	// 		} catch (Exception e) {
-	// 			// What if data update fails?
-	// 			System.out.println("PASSWORD - false");
-	// 			return false;
-	// 		}
-	// 	}
-	// 	return true;
-	// }
-
-	// /**
-	//  * Updates the POWERFAIL value to the database
-	//  * @return true/false - Update successful/update unsuccessful
-	//  * @author Bennett Andrews
-	//  */
-	// public boolean updatePF() {
-
-	// 	if (!isDatumUpdated(POWERFAIL)) {
-	// 		try {
-	// 			String strippedData = POWERFAIL.substring(1);
-	// 			dbConnection.setTo(strippedData, InfoSET.Power_failure_last, Meter_id);
-	// 			POWERFAIL = strippedData;
-
-	// 			return true;
-
-	// 		} catch (Exception e) {
-	// 			// What if data update fails?
-	// 			System.out.println("POWERFAIL - false");
-	// 			return false;
-	// 		}
-	// 	}
-	// 	return true;
-	// }
-
-	// /**
-	//  * Updates the RELAY value to the database
-	//  * @return true/false - Update successful/update unsuccessful
-	//  * @author Bennett Andrews
-	//  */
-	// public boolean updateRELAY() {
-
-	// 	if (!isDatumUpdated(RELAY)) {
-	// 		try {
-	// 			String strippedData = RELAY.substring(1);
-	// 			dbConnection.setTo(strippedData, InfoSET.Relay_enabled, Meter_id);
-	// 			RELAY = strippedData;
-
-	// 			return true;
-
-	// 		} catch (Exception e) {
-	// 			// What if data update fails?
-	// 			System.out.println("RELAY - false");
-	// 			return false;
-	// 		}
-	// 	}
-	// 	return true;
-	// }
-
-	// /**
-	//  * Updates the RESET_TIME value to the database
-	//  * @return true/false - Update successful/update unsuccessful
-	//  * @author Bennett Andrews
-	//  */
-	// public boolean updateRSTT() {
-
-	// 	if (!isDatumUpdated(RESET_TIME)) {
-	// 		try {
-	// 			String strippedData = RESET_TIME.substring(1);
-	// 			dbConnection.setTo(strippedData, InfoSET.Energy_allocation_reset_time, Meter_id);
-	// 			RESET_TIME = strippedData;
-
-	// 			return true;
-
-	// 		} catch (Exception e) {
-	// 			// What if data update fails?
-	// 			System.out.println("RESET_TIME - false");
-	// 			return false;
-	// 		}
-	// 	}
-	// 	return true;
-	// }
-	//
-	// /**
-	//  * Updates the TIME value to the database
-	//  * @return true/false - Update successful/update unsuccessful
-	//  * @author Bennett Andrews
-	//  */
-	// public boolean updateTIME() {
-
-	// 	if (!isDatumUpdated(SSID)) {
-	// 		try {
-	// 			String strippedData = TIME.substring(1);
-	// 			dbConnection.setTo(strippedData, InfoSET.Meter_time, Meter_id);
-	// 			TIME = strippedData;
-
-	// 			return true;
-
-	// 		} catch (Exception e) {
-	// 			// What if data update fails?
-	// 			System.out.println("TIME - false");
-	// 			return false;
-	// 		}
-	// 	}
-	// 	return true;
-	// }
 }
