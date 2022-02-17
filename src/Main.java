@@ -10,7 +10,7 @@ public class Main
     MeterScan meterScan;
     HashMap<String, Meter> metersConnected;
     
-    private static final int LOOP_DELAY = 5000;
+    private static final int LOOP_DELAY = 5000; // ensure that loops take at least this long (msec)
 
     
     public static void main(String[] args)
@@ -56,7 +56,7 @@ public class Main
         meterScan.setN3S( 1 );
         meterScan.setN3E( 1 );
         meterScan.setN4S( 2 );
-        meterScan.setN4E( 4 );
+        meterScan.setN4E( 5 );
     }
 
     public void runLoop()

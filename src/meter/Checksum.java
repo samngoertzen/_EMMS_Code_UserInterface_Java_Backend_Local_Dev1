@@ -22,6 +22,7 @@ public class Checksum
     public static boolean isValidCommand( String command )
     {
         boolean isValid = true;
+
         // Guard clause against null commands
         if ( command.length() == 0 ) 
         {
@@ -43,6 +44,7 @@ public class Checksum
             isValid =  false;
         }
 
+        // Ensure that if there are multiple parameters, none of them are null
         if( command.indexOf( ARG_DELIMETER ) > -1)
         {
             

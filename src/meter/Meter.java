@@ -15,6 +15,8 @@ public class Meter
 	// Number of times a command should be sent to receive a response before giving up.
 	private static final int SEND_ATTEMPTS = 3;
 
+	private static final String CURRENT_CENTURY = "20"; // i.e. 20 is for years 2000 to 2099.
+
 	// Stores all meter object data relevant to live meters.
 	HashMap<InfoGET, String> data =  new HashMap<InfoGET, String>();
 
@@ -54,7 +56,7 @@ public class Meter
 	{
 		for( InfoGET datum : InfoGET.values() )
 		{
-			data.put( datum, "0");
+			data.put( datum, "");
 		}
 	}
 
@@ -209,7 +211,13 @@ public class Meter
 	{
 		for( InfoGET field : InfoGET.values() )
 		{
-			dbConnection.setTo( data.get( field ), field, id() );
+			String value = getDatum( field );
+			
+			if( (value != "") && (value != null) )
+			{
+				System.out.println("DB - Setting " + field + " to " + value );
+				dbConnection.setTo( value, field, id() );
+			}	
 		}
 
 		updateTimestampInDB();
@@ -244,8 +252,6 @@ public class Meter
 			addMeterInDB();
 		}
 
-		// TODO
-
 		updateDatum( InfoGET.Meter_password );
 		updateDatum( InfoGET.Meter_time );
 		updateDatum( InfoGET.Energy_allocation );
@@ -257,6 +263,7 @@ public class Meter
 		updateDatum( InfoGET.Lights_enabled );
 		updateDatum( InfoGET.Relay_enabled );
 		updateDatum( InfoGET.Firmware_version_WiFi_board );
+		updateDatum( InfoGET.Energy_used_lifetime );
 
 		setDatum( InfoGET.Online, "1" );
 	}
@@ -397,14 +404,21 @@ public class Meter
 			return;
 		}
 
+		System.out.println("Response >> " + response );
+
 		// Removes start delimeter and everything after (including) the checksum delimeter.
 		response = response.substring(1, response.indexOf( Checksum.CHECKSUM_DELIMETER , 0) );
-
+		
 		String[] params = response.split( Checksum.ARG_DELIMETER );
 
 		if( params[0].equals( "Set" ) )
 		{
 			parseSetResponse(params);
+		}
+		else if( params[0].equals( "Conf" ) )
+		{
+			// TODO send final confirm.
+			System.out.println("Confirmation received.");
 		}
 		else
 		{
@@ -424,9 +438,6 @@ public class Meter
 	{
 		System.out.println("Parsing params: " + Arrays.toString( params ) );
 
-		InfoGET field = InfoGET.Online; // default value, overridden later
-		String value = "";
-
 		try
 		{
 			switch( params[1] )
@@ -440,8 +451,8 @@ public class Meter
 					break;
 
 				case "Time":
-					field = InfoGET.Meter_time; // params 1: MM-DD-YY, 2: HH:MM:SS
-					value = "TODO - Time";
+					setDatum( InfoGET.Meter_time, 
+							  String.format("%s %s", convertDDMMYYtoYYYYMMDD(params[2]), params[3] ) );
 					break;
 
 				case "EnAl":
@@ -449,13 +460,14 @@ public class Meter
 					break;
 
 				case "RstTim":
-					field = InfoGET.Energy_allocation_reset_time;
-					value = "TODO - Time";							// params 1: HH, 2: MM
+					setDatum( InfoGET.Energy_allocation_reset_time, 
+							// Note that this throws SQL errors for datetime format if there are 
+							// !=2 digits in the hour or minute parameters.
+					          String.format("1111-11-11 %s:%s:00", params[2], params[3]) );
 					break;
 
 				case "PwrFail":
-					field = InfoGET.Power_failure_last; // TODO NOT WORKING
-					value = "TODO - time";
+					// TODO - Not working
 					break;
 
 				case "Alarm":
@@ -480,14 +492,15 @@ public class Meter
 					break;
 
 				case "PwrData":
-					// setDatum( InfoGET.Emergency_buffer, params[2] );
+					setDatum( InfoGET.Emergency_buffer, params[2] );
 					setDatum( InfoGET.Energy_used, params[3] );
 					setDatum( InfoGET.Energy_load, params[4] );
 					break;
 
-				// case "Stat":
-
-				// TODO add more cases
+				case "Stat":
+					setDatum( InfoGET.Energy_used_lifetime, params[2] );
+					setDatum( InfoGET.Energy_used_previous_day, params[3] );
+					break;
 
 				default:
 					break;
@@ -499,6 +512,34 @@ public class Meter
 		}
 
 		return;
+	}
+
+
+	/**
+	 * Converts the DD-MM-YY format from the received meter time to the 
+	 * YYYY-MM-DD format required by the datetime MySQL entry. Returns 
+	 * null if the format is incorrect.
+	 * @author Bennett Andrews
+	 * @param mmddyy
+	 * @return
+	 */
+	public static String convertDDMMYYtoYYYYMMDD( String mmddyy )
+	{
+		if( (mmddyy == "") || (mmddyy == null) )
+		{
+			System.out.println("Time-conversion: Time is null");
+			return "";
+		}
+
+		String[] pieces = mmddyy.split("-");
+
+		if( pieces.length != 3 )
+		{
+			System.out.println("Time-conversion: Incorrect number of parameters.");
+			return "";
+		}
+
+		return String.format( (CURRENT_CENTURY + "%s-%s-%s"), pieces[2], pieces[1], pieces[0] );
 	}
 
 
@@ -567,6 +608,10 @@ public class Meter
 				datum = "Alarm";
 				break;
 
+			case Emergency_buffer:
+				datum = "Emer";
+				break;
+
 			case Emergency_button_enabled:
 				datum = "Emer";
 				break;
@@ -574,10 +619,6 @@ public class Meter
 			case Emergency_button_allocation:
 				datum = "Emer";
 				break;
-
-			// case Lights_enabled: // NOT VALID CURRENTLY
-			// 	datum = "Lights";
-			// 	break;
 
 			case Relay_enabled:
 				datum = "Relay";
@@ -587,33 +628,40 @@ public class Meter
 				datum = "CBver";
 				break;
 
-			// TODO case: ?? stat
+			case Energy_used_previous_day:
+				datum = "Stat";
+				break;
+
+			case Energy_used_lifetime:
+				datum = "Stat";
+				break;
 
 			default:
 				System.out.println("InfoGET value not available for update.");
 				break;
-		}	
-		
-		String command = commandBuilder( "Read", datum );
-
-		Client client = new Client();
-		String response = "";
-
-		for( int i = 0; i < SEND_ATTEMPTS; i++ )
-		{
-			System.out.println("\nSending to id: " + id() + " >> " + command );
-
-			response = client.communicate( ip(), command );
-			
-			if( response != "" )
-			{
-				break;
-			}
 		}
-		
-		System.out.println("Received: " + response );
-		parseResponse( response );
 
-		return;
+		if( datum != "" )
+		{
+			String command = commandBuilder( "Read", datum );
+
+			Client client = new Client();
+			String response = "";
+
+			for( int i = 0; i < SEND_ATTEMPTS; i++ )
+			{
+				System.out.println("\nSending to id: " + id() + " >> " + command );
+
+				response = client.communicate( ip(), command );
+				
+				if( response != "" )
+				{
+					break;
+				}
+			}
+			
+			System.out.println("Received: " + response );
+			parseResponse( response );
+		}
 	}
 }
