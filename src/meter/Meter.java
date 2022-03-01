@@ -56,7 +56,7 @@ public class Meter
 	{
 		for( InfoGET datum : InfoGET.values() )
 		{
-			data.put( datum, "");
+			data.put( datum, "9");
 		}
 	}
 
@@ -258,12 +258,24 @@ public class Meter
 		updateDatum( InfoGET.Energy_allocation_reset_time );
 		updateDatum( InfoGET.Energy_used );
 		updateDatum( InfoGET.Power_failure_last );
-		updateDatum( InfoGET.Alarm_audible ); 				// Updates ALL alarm datum
+		updateDatum( InfoGET.Alarm_audible ); 				// Updates ALL Alarm values
 		updateDatum( InfoGET.Emergency_button_enabled );
-		updateDatum( InfoGET.Lights_enabled );
-		updateDatum( InfoGET.Relay_enabled );
+		updateDatum( InfoGET.Relay );
 		updateDatum( InfoGET.Firmware_version_WiFi_board );
-		updateDatum( InfoGET.Energy_used_lifetime );
+		updateDatum( InfoGET.Firmware_version_command_board );
+		updateDatum( InfoGET.Energy_used_lifetime );		// Updates all Stats values
+
+		// TODO: Problems!
+
+		// Energy_remaining
+		// Energy_time_remaining
+		// Power_failure_last
+		// ???? Power_restore
+		// Debug
+		// Lights
+		// Wifi board firmware version
+		// Online last
+		// Meter id
 
 		setDatum( InfoGET.Online, "1" );
 	}
@@ -488,7 +500,8 @@ public class Meter
 					break;
 
 				case "Relay":
-					setDatum( InfoGET.Relay_enabled, (params[2].equals("On")) ? "1" : "0" );
+					setDatum( InfoGET.Relay, params[2].equals("On") ? "1" : (params[2].equals("Off") ? "0" : "2") );
+					// i know, nested ternary operators are stupid.
 					break;
 
 				case "PwrData":
@@ -620,7 +633,7 @@ public class Meter
 				datum = "Emer";
 				break;
 
-			case Relay_enabled:
+			case Relay:
 				datum = "Relay";
 				break;
 

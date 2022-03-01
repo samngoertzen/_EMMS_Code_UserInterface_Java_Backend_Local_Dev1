@@ -36,7 +36,7 @@ public enum InfoGET
 	Emergency_button_allocation, 
 	Debug_enabled, 
 	Lights_enabled, 
-	Relay_enabled, 
+	Relay, 
 	Firmware_version_command_board, 
 	Firmware_version_WiFi_board, 
 }

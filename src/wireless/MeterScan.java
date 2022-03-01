@@ -34,7 +34,7 @@ public class MeterScan
 
 	/**
 	 * function from https://stackoverflow.com/questions/901755/how-to-get-the-ip-of-the-computer-on-linux-through-java
-	 * Grabs IP from network.
+	 * Grabs self-IP from network.
 	 * @param preferIpv4
 	 * @param preferIPv6
 	 * @return

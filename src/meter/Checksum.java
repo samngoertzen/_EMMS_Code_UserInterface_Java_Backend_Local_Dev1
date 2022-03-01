@@ -219,26 +219,32 @@ public class Checksum
          */
         // Invalid command syntax
         String action = "!Set;Lights;On";
+        System.out.println("\nCommand to check: " + action );
         System.out.println( convert(action) );
 
         // Invalid command syntax
         action = "Set;Lights;On*";
+        System.out.println("\nCommand to check: " + action );
         System.out.println( convert(action) );
 
         // Null command error
         action = "";
+        System.out.println("\nCommand to check: " + action );
         System.out.println( convert(action) );
 
         // ASCII value of a = 97
         action = "!a*";
+        System.out.println("\nCommand to check: " + action );
         System.out.println( convert(action) );
 
         // ASCII value of b = 98
         // a + b = 95
         action = "!ab*";
+        System.out.println("\nCommand to check: " + action );
         System.out.println( convert(action) );
 
         action = "!Set;Lights;On*";
+        System.out.println("\nCommand to check: " + action );
         System.out.println( convert(action) );
 
         /**
@@ -248,26 +254,32 @@ public class Checksum
          */
         // Too many delimeters
         String response = "!Read;CBv$er$905*";
+        System.out.println( "\nResponse to check: " + response );
         System.out.println( isVerified(response) );
 
         // Too few delimeters
         response = "!Read;CBver905*";
+        System.out.println( "\nResponse to check: " + response );
         System.out.println( isVerified(response) );
 
         // Null parameters
         response = "!Read;;CBver$905*";
+        System.out.println( "Response to check: " + response );
         System.out.println( isVerified(response) );
 
         // Non-numeric checksum
         response = "!Read;CBver$*";
+        System.out.println( "\nResponse to check: " + response );
         System.out.println( isVerified(response) );
 
         // Correct format, incorrect sum
         response = "!Read;CBver$904*";
+        System.out.println( "\nResponse to check: " + response );
         System.out.println( isVerified(response) );
 
         // Correct format and sum
         response = "!Read;CBver$905*";
+        System.out.println( "\nResponse to check: " + response );
         System.out.println( isVerified(response) );
     }
 }

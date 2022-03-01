@@ -55,7 +55,7 @@ public class Main
         meterScan.setN2E( 168 );
         meterScan.setN3S( 1 );
         meterScan.setN3E( 1 );
-        meterScan.setN4S( 2 );
+        meterScan.setN4S( 3 );
         meterScan.setN4E( 5 );
     }
 
