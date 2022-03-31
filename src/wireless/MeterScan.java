@@ -149,8 +149,6 @@ public class MeterScan
 		return meters;
 	}
 
-	// TODO: get my ip function
-
 	/**
 	 * Scan a specified range of IPV4 addresses to find potential meters.
 	 * Meters are stored in the confirmed_meters ArrayList for later extraction.
@@ -168,7 +166,7 @@ public class MeterScan
 	public Meter[] scan_ip4_ranges( int net1_start, int net1_end,
 									int net2_start, int net2_end,
 									int net3_start, int net3_end,
-									int net4_start, int net4_end )	// TODO: test
+									int net4_start, int net4_end )
 	{
 		// ============================================================================
 		// START Guard clause against addresses out of range.
@@ -246,7 +244,7 @@ public class MeterScan
 	 * @param ipv4 IPV4 address to be tested
 	 * @return true/false - ipv4 is a meter/isnot a meter
 	 */
-	private boolean scan_ip4( String ipv4 ) // TODO: Test it
+	private boolean scan_ip4( String ipv4 )
 	{
 		try
 		{

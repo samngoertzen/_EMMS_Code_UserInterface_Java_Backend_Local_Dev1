@@ -21,27 +21,25 @@ public class Checksum
      */
     public static boolean isValidCommand( String command )
     {
-        boolean isValid = true;
-
         // Guard clause against null commands
         if ( command.length() == 0 ) 
         {
-            System.out.println("Null command.");
-            isValid = false;
+            System.out.println("Checksum: Null command.");
+            return false;
         }
 
         // Guard clause against commands missing the
         // start and stop delimeters.
         if ( !command.startsWith( START_DELIMETER ) )
         {
-            System.out.println("Invalid command syntax. '" + command + "' has no start delimeter.");
-            isValid =  false;
+            System.out.println("Checksum: Invalid command syntax. '" + command + "' has no start delimeter.");
+            return false;
         }
 
         if ( !command.endsWith( STOP_DELIMETER ) )
         {
-            System.out.println("Invalid command syntax. '" + command + "' has no stop delimeter.");
-            isValid =  false;
+            System.out.println("Checksum: Invalid command syntax. '" + command + "' has no stop delimeter.");
+            return  false;
         }
 
         // Ensure that if there are multiple parameters, none of them are null
@@ -55,13 +53,13 @@ public class Checksum
                 if( (param == null) || ( param.equals("") ) )
                 {
                     System.out.println("Command has null parameters.");
-                    isValid =  false;
+                    return false;
                 }
             }
         }
 
         // If it passes all the checks, it is a vaild command
-        return isValid;
+        return true;
     }
 
     /**
@@ -169,7 +167,6 @@ public class Checksum
         // Guard clause against invalid commands
         if( !isValidCommand( command ) )
         {
-            System.out.println("Checksum: Invalid command.");
             return false;
         }
 
@@ -209,77 +206,86 @@ public class Checksum
         }
     }
 
+    // TODO!!!
+    public static String[] separateMultipleCommands( String commandstr )
+    {
+        return commandstr.split( "(?=\\" + START_DELIMETER + ")" ); // regex is pain. this is a zero-width lookahead?
+        // https://stackoverflow.com/questions/4416425/how-to-split-string-with-some-separator-but-without-removing-that-separator-in-j
+    }
+
 
     public static void main(String[] args) 
     {
-        /**
-         * 
-         * CONVERT TESTS
-         * 
-         */
-        // Invalid command syntax
-        String action = "!Set;Lights;On";
-        System.out.println("\nCommand to check: " + action );
-        System.out.println( convert(action) );
+        // /**
+        //  * 
+        //  * CONVERT TESTS
+        //  * 
+        //  */
+        // // Invalid command syntax
+        // String action = "!Set;Lights;On";
+        // System.out.println("\nCommand to check: " + action );
+        // System.out.println( convert(action) );
 
-        // Invalid command syntax
-        action = "Set;Lights;On*";
-        System.out.println("\nCommand to check: " + action );
-        System.out.println( convert(action) );
+        // // Invalid command syntax
+        // action = "Set;Lights;On*";
+        // System.out.println("\nCommand to check: " + action );
+        // System.out.println( convert(action) );
 
-        // Null command error
-        action = "";
-        System.out.println("\nCommand to check: " + action );
-        System.out.println( convert(action) );
+        // // Null command error
+        // action = "";
+        // System.out.println("\nCommand to check: " + action );
+        // System.out.println( convert(action) );
 
-        // ASCII value of a = 97
-        action = "!a*";
-        System.out.println("\nCommand to check: " + action );
-        System.out.println( convert(action) );
+        // // ASCII value of a = 97
+        // action = "!a*";
+        // System.out.println("\nCommand to check: " + action );
+        // System.out.println( convert(action) );
 
-        // ASCII value of b = 98
-        // a + b = 95
-        action = "!ab*";
-        System.out.println("\nCommand to check: " + action );
-        System.out.println( convert(action) );
+        // // ASCII value of b = 98
+        // // a + b = 95
+        // action = "!ab*";
+        // System.out.println("\nCommand to check: " + action );
+        // System.out.println( convert(action) );
 
-        action = "!Set;Lights;On*";
-        System.out.println("\nCommand to check: " + action );
-        System.out.println( convert(action) );
+        // action = "!Set;Lights;On*";
+        // System.out.println("\nCommand to check: " + action );
+        // System.out.println( convert(action) );
 
-        /**
-         * 
-         * CHECK TESTS
-         * 
-         */
-        // Too many delimeters
-        String response = "!Read;CBv$er$905*";
-        System.out.println( "\nResponse to check: " + response );
-        System.out.println( isVerified(response) );
+        // /**
+        //  * 
+        //  * CHECK TESTS
+        //  * 
+        //  */
+        // // Too many delimeters
+        // String response = "!Read;CBv$er$905*";
+        // System.out.println( "\nResponse to check: " + response );
+        // System.out.println( isVerified(response) );
 
-        // Too few delimeters
-        response = "!Read;CBver905*";
-        System.out.println( "\nResponse to check: " + response );
-        System.out.println( isVerified(response) );
+        // // Too few delimeters
+        // response = "!Read;CBver905*";
+        // System.out.println( "\nResponse to check: " + response );
+        // System.out.println( isVerified(response) );
 
-        // Null parameters
-        response = "!Read;;CBver$905*";
-        System.out.println( "Response to check: " + response );
-        System.out.println( isVerified(response) );
+        // // Null parameters
+        // response = "!Read;;CBver$905*";
+        // System.out.println( "Response to check: " + response );
+        // System.out.println( isVerified(response) );
 
-        // Non-numeric checksum
-        response = "!Read;CBver$*";
-        System.out.println( "\nResponse to check: " + response );
-        System.out.println( isVerified(response) );
+        // // Non-numeric checksum
+        // response = "!Read;CBver$*";
+        // System.out.println( "\nResponse to check: " + response );
+        // System.out.println( isVerified(response) );
 
-        // Correct format, incorrect sum
-        response = "!Read;CBver$904*";
-        System.out.println( "\nResponse to check: " + response );
-        System.out.println( isVerified(response) );
+        // // Correct format, incorrect sum
+        // response = "!Read;CBver$904*";
+        // System.out.println( "\nResponse to check: " + response );
+        // System.out.println( isVerified(response) );
 
-        // Correct format and sum
-        response = "!Read;CBver$905*";
-        System.out.println( "\nResponse to check: " + response );
-        System.out.println( isVerified(response) );
+        // // Correct format and sum
+        // response = "!Read;CBver$905*";
+        // System.out.println( "\nResponse to check: " + response );
+        // System.out.println( isVerified(response) );
+
+        System.out.println( Arrays.deepToString( separateMultipleCommands( "!Read;CBver$905*!Read;CBver$905*" ) ) );
     }
 }

@@ -1,5 +1,6 @@
 import java.util.HashMap;
 
+import database.dbConnection;
 import meter.Meter;
 import wireless.MeterScan;
 
@@ -7,6 +8,16 @@ import wireless.MeterScan;
 
 public class Main 
 {
+    private static final int  IPV4_ADDRESS_1_START = 192;
+    private static final int  IPV4_ADDRESS_1_END   = 192;
+    private static final int  IPV4_ADDRESS_2_START = 168;
+    private static final int  IPV4_ADDRESS_2_END   = 168;
+    private static final int  IPV4_ADDRESS_3_START = 1;
+    private static final int  IPV4_ADDRESS_3_END   = 1;
+    private static final int  IPV4_ADDRESS_4_START = 3;
+    private static final int  IPV4_ADDRESS_4_END   = 5;
+
+
     MeterScan meterScan;
     HashMap<String, Meter> metersConnected;
     
@@ -36,7 +47,7 @@ public class Main
                 {
                     Thread.sleep( delay );
                 } 
-                catch (InterruptedException e) 
+                catch (InterruptedException e)
                 {
                     e.printStackTrace();
                 }
@@ -49,14 +60,20 @@ public class Main
         metersConnected = new HashMap<String, Meter>();
         meterScan = new MeterScan();
 
-        meterScan.setN1S( 192 );
-        meterScan.setN1E( 192 );
-        meterScan.setN2S( 168 );
-        meterScan.setN2E( 168 );
-        meterScan.setN3S( 1 );
-        meterScan.setN3E( 1 );
-        meterScan.setN4S( 3 );
-        meterScan.setN4E( 5 );
+        // Configure ranges for IP scanning
+        meterScan.setN1S( IPV4_ADDRESS_1_START );
+        meterScan.setN1E( IPV4_ADDRESS_1_END );
+        meterScan.setN2S( IPV4_ADDRESS_2_START );
+        meterScan.setN2E( IPV4_ADDRESS_2_END );
+        meterScan.setN3S( IPV4_ADDRESS_3_START );
+        meterScan.setN3E( IPV4_ADDRESS_3_END );
+        meterScan.setN4S( IPV4_ADDRESS_4_START );
+        meterScan.setN4E( IPV4_ADDRESS_4_END );
+
+        // flag all meters offline. because we don't know the status
+        // of meters when the program starts, assume all meters are offline
+        // until we can contact them and check for sure.
+        dbConnection.setAllMetersOffline();
     }
 
     public void runLoop()
@@ -69,7 +86,7 @@ public class Main
             if( metersConnected.containsKey( meter.id() ) )
             {
                 System.out.println("Duplicate meter: " + meter.id() );
-                // do nothing else with duplicates
+                // do nothing else with meters that are already set up
             }
             else 
             {

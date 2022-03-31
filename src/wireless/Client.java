@@ -14,7 +14,7 @@ public class Client
 	private String timeOut = null;
 
 	private final int METER_TCP_PORT = 8001;
-	private static final int TIMEOUT = 500;
+	private static final int TIMEOUT = 1000;
 	
 	/**
 	 * Polymorphed communicate function to use the default meter port.
@@ -63,7 +63,8 @@ public class Client
 		String response = "No response";
 		try 
 		{
-			response = sendMessage(command);
+			System.out.println("Attempting to send command > " + command );
+			response = sendMessage( command );
 		} 
 		catch (IOException e) 
 		{
@@ -93,10 +94,10 @@ public class Client
 	 * @author ZacheryHolsinger
 	 * @apiNote Private Function, Assumes Connection already open
 	 */
-	private String sendMessage(String msg) throws IOException 
+	private String sendMessage( String msg ) throws IOException 
 	{
 		out.println(msg);
-
+		
 		// Wait a while to ensure buffer is fully built before trying to read it.
 		try
 		{

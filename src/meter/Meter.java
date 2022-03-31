@@ -39,7 +39,7 @@ public class Meter
 
 		// Next, set default data in the data map. This is primarily
 		// to initialize the map, not to set valid values.
-		defaultData();
+		initializeDefaultData();
 
 		data.put( InfoGET.IP_address, ip );
 	}
@@ -52,7 +52,7 @@ public class Meter
 	 * but also convenient for debugging.
 	 * @author Bennett Andrews
 	 */
-	private void defaultData()
+	private void initializeDefaultData()
 	{
 		for( InfoGET datum : InfoGET.values() )
 		{
@@ -76,6 +76,7 @@ public class Meter
 	 */
 	public void setDatum( InfoGET field, String value )
 	{
+		System.out.println("MO - Setting " + field + " to " + value );
 		data.put( field, value );
 	}
 
@@ -138,9 +139,16 @@ public class Meter
 	 * Fetches meter commands from the Action table in the database
 	 * and pushes them to live meters.
 	 * @author Bennett Andrews
+	 * @throws IOException if the meter is missing under the isConnected() method.
 	 */
-	private void pushCommands()
+	private void pushCommands() throws IOException
 	{
+		// is the meter online?
+		if( !isConnected() )
+		{
+			throw new IOException("Meter is not connected.");
+		}
+
 		System.out.println("\n\nPushing commands.\n\n");
 
 		Client client = new Client();
@@ -155,6 +163,7 @@ public class Meter
 			// commandset = [action_index, meter_id, command]
 			String action_index = commandset[0];
 			String command = commandset[2];
+			String doubled_command = command + command;
 
 			String response = "";
 
@@ -164,8 +173,8 @@ public class Meter
 			{
 				for( int i = 0; i < SEND_ATTEMPTS; i++ )
 				{
-					System.out.println("Sending command " + command + " to meterid " + id() );
-					response = client.communicate( ip() , command );
+					System.out.println("Sending command " + doubled_command + " to meterid " + id() );
+					response = client.communicate( ip() , doubled_command );
 
 					if( response != "" ) break;	// Stop resending commands if we get a response
 				}
@@ -203,8 +212,6 @@ public class Meter
 	 * @author Bennett Andrews
 	 * @param field
 	 * @param value
-	 * @apiNote *!IMOPORTANT!* - This function solely relies on the fact 
-	 * that InfoSET and InfoGET are in the same order! Otherwise, Java can't convert
 	 * between enums.
 	 */
 	public void pushAllInDB()
@@ -229,13 +236,12 @@ public class Meter
 	
 	/**
 	 * Updates the meter object with live meter information.
-	 * @param data
-	 * @param value
-	 * @return
+	 * @author Bennett Andrews
+	 * @throws IOException if the meter is missing under the isConnected() method.
 	 */
 	public void update() throws IOException
 	{
-		System.out.println("Updating Meter_id: " + id() );
+		System.out.println("UPDATING datum on Meter_id: " + id() );
 
 		// is the meter online?
 		if( !isConnected() )
@@ -244,38 +250,25 @@ public class Meter
 		}
 
 		// is the meter registered in the database?
-		boolean meterInSystem = dbConnection.isMeterInDB( id() );
-		System.out.println("Is meter in system? >" + meterInSystem);
+		boolean meterInDB = dbConnection.isMeterInDB( id() );
+		System.out.println("Is meter in the database already? > " + meterInDB);
 
-		if(!meterInSystem)
+		if( !meterInDB )
 		{
 			addMeterInDB();
 		}
 
+		updateDatum( InfoGET.Meter_name );
 		updateDatum( InfoGET.Meter_password );
 		updateDatum( InfoGET.Meter_time );
 		updateDatum( InfoGET.Energy_allocation );
 		updateDatum( InfoGET.Energy_allocation_reset_time );
-		updateDatum( InfoGET.Energy_used );
-		updateDatum( InfoGET.Power_failure_last );
+		updateDatum( InfoGET.Energy_used_since_reset );		// Updates ALL Energy Data values
+		updateDatum( InfoGET.Power_failure_last );			// Updates ALL Power failure values
 		updateDatum( InfoGET.Alarm_audible ); 				// Updates ALL Alarm values
-		updateDatum( InfoGET.Emergency_button_enabled );
+		updateDatum( InfoGET.Emergency_button_enabled );	// Updates ALL Emergency Button values
 		updateDatum( InfoGET.Relay );
-		updateDatum( InfoGET.Firmware_version_WiFi_board );
-		updateDatum( InfoGET.Firmware_version_command_board );
 		updateDatum( InfoGET.Energy_used_lifetime );		// Updates all Stats values
-
-		// TODO: Problems!
-
-		// Energy_remaining
-		// Energy_time_remaining
-		// Power_failure_last
-		// ???? Power_restore
-		// Debug
-		// Lights
-		// Wifi board firmware version
-		// Online last
-		// Meter id
 
 		setDatum( InfoGET.Online, "1" );
 	}
@@ -356,15 +349,36 @@ public class Meter
 		// Try to confirm that it is a meter for SEND_ATTEMPTS times
 		for( int i = 0; i < SEND_ATTEMPTS; i++ )
 		{
-			response = ""; // reset response
-			response = client.communicate( ipv4, "!Read;CBver$905*"); // TODO get real ping command
-			System.out.println( "Response > " + response );
-
-			if( response.equals("!Set;CBver;20190929$1300*") ) // TODO get better meter verification condition.
+			// If we find a confirmed meter, we don't need to keep sending confirmation attempts.
+			if( is_meter == true )
 			{
-				is_meter = true;
+				System.out.println("test duck");
+				break; 
 			}
-			// else, it is not a meter and the default false carries through
+
+			response = ""; // reset response every loop
+
+			String command = commandBuilder( "MName" );
+			String doubled_command = command + command;
+
+			response = client.communicate( ipv4, doubled_command );
+			System.out.println( "Online Check: > " + response );
+
+			String[] response_list = Checksum.separateMultipleCommands( response );
+
+			for( String response_item : response_list )
+			{
+				System.out.println("Online Check: Single Command > " + response_item );
+				if( Checksum.isVerified( response_item ) ) // If we get a verified command, this is a meter!
+				{
+					is_meter = true;
+					break;				// After we find  a good response, we don't need to check the other commands.
+				}
+				else
+				{
+					// it is not a meter and the default false carries through
+				}
+			}
 		}
 
 		client.close();
@@ -408,33 +422,39 @@ public class Meter
 	 * @author Bennett Andrews
 	 * @param response The string to be parsed
 	 */
-	private void parseResponse( String response )
+	private void parseResponse( String responseString )
 	{
-		if( !Checksum.isVerified( response ) )
-		{
-			System.out.println("Ignoring invalid response.");
-			return;
-		}
+		boolean successful_parse = false; // TODO implement this
 
-		System.out.println("Response >> " + response );
+		String[] responses = Checksum.separateMultipleCommands( responseString );
 
-		// Removes start delimeter and everything after (including) the checksum delimeter.
-		response = response.substring(1, response.indexOf( Checksum.CHECKSUM_DELIMETER , 0) );
-		
-		String[] params = response.split( Checksum.ARG_DELIMETER );
+		for( String response : responses )
+		{
+			System.out.println( "Parser: Command found >> " + response );
+			if( !Checksum.isVerified( response ) )
+			{
+				System.out.println("Parser: Ignoring invalid response.");
+				return;
+			}
 
-		if( params[0].equals( "Set" ) )
-		{
-			parseSetResponse(params);
-		}
-		else if( params[0].equals( "Conf" ) )
-		{
-			// TODO send final confirm.
-			System.out.println("Confirmation received.");
-		}
-		else
-		{
-			System.out.println("Parser unable to find command type.");
+			// Removes start delimeter and everything after (including) the checksum delimeter.
+			response = response.substring(1, response.indexOf( Checksum.CHECKSUM_DELIMETER , 0) );
+			
+			String[] params = response.split( Checksum.ARG_DELIMETER );
+
+			if( params[0].equals( "Set" ) )
+			{
+				parseSetResponse(params);
+			}
+			else if( params[0].equals( "Conf" ) )
+			{
+				// TODO send final confirm.
+				System.out.println("Parser: Confirmation received.");
+			}
+			else
+			{
+				System.out.println("Parser: Unable to find command type.");
+			}
 		}
 	}
 
@@ -454,8 +474,8 @@ public class Meter
 		{
 			switch( params[1] )
 			{
-				case "CBver":
-					setDatum( InfoGET.Firmware_version_command_board, params[2] );
+				case "MName":
+					setDatum( InfoGET.Meter_name, params[2] );
 					break;
 
 				case "Pass":
@@ -479,15 +499,14 @@ public class Meter
 					break;
 
 				case "PwrFail":
-					// TODO - Not working
+					setDatum( InfoGET.Power_failure_last, convertPowerFailureTime( params[2] ) );
+					setDatum( InfoGET.Power_restore_last, convertPowerFailureTime( params[3] ) );
 					break;
 
 				case "Alarm":
 					setDatum( InfoGET.Alarm_audible, (params[2].equals("On")) ? "1" : "0" );
-					setDatum( InfoGET.Alarm_one_enabled, (params[3].equals("On")) ? "1" : "0" );
-					setDatum( InfoGET.Alarm_one_thresh, params[4] );
-					setDatum( InfoGET.Alarm_two_enabled, (params[5].equals("On")) ? "1" : "0" );
-					setDatum( InfoGET.Alarm_two_thresh, params[6] );
+					setDatum( InfoGET.Alarm_one_thresh, params[3] );
+					setDatum( InfoGET.Alarm_two_thresh, params[4] );
 					break;
 
 				case "Emer":
@@ -495,7 +514,7 @@ public class Meter
 					setDatum( InfoGET.Emergency_button_allocation, params[3] );
 					break;
 
-				case "Lights": // NOT VALID
+				case "Lights":
 					setDatum( InfoGET.Lights_enabled, (params[2].equals("On")) ? "1" : "0" );
 					break;
 
@@ -505,9 +524,8 @@ public class Meter
 					break;
 
 				case "PwrData":
-					setDatum( InfoGET.Emergency_buffer, params[2] );
-					setDatum( InfoGET.Energy_used, params[3] );
-					setDatum( InfoGET.Energy_load, params[4] );
+					setDatum( InfoGET.Energy_used_since_reset, params[3] );
+					setDatum( InfoGET.Current_power_used, params[4] );
 					break;
 
 				case "Stat":
@@ -531,7 +549,7 @@ public class Meter
 	/**
 	 * Converts the DD-MM-YY format from the received meter time to the 
 	 * YYYY-MM-DD format required by the datetime MySQL entry. Returns 
-	 * null if the format is incorrect.
+	 * empty string if the format is incorrect.
 	 * @author Bennett Andrews
 	 * @param mmddyy
 	 * @return
@@ -555,6 +573,58 @@ public class Meter
 		return String.format( (CURRENT_CENTURY + "%s-%s-%s"), pieces[2], pieces[1], pieces[0] );
 	}
 
+	/**
+	 * Converts the EMMS meter Power Failure time format (MM-DD HH:MM::SS) to the
+	 * database format required by the datetime MySQL entry. Returns empty string if
+	 * the format is incorrect.
+	 * @author Bennett Andrews
+	 * @param pftime
+	 * @return
+	 */
+	public static String convertPowerFailureTime( String pftime )
+	{
+		// Guard clause against null input
+		if( (pftime == "") || (pftime == null) )
+		{
+			System.out.println("Time-conversion: Time is null");
+			return "";
+		}
+
+		
+		String[] pieces = pftime.split("-|\\s|:");	// split at '-' or ' ' or ':'
+
+		// Guard clause against incorrect formatting/number of parameters.
+		if( pieces.length != 4 )
+		{
+			System.out.println("Time-conversion: Incorrect number of power fail delimeters.");
+			return "";
+		}
+
+		
+		for( String piece : pieces )
+		{
+			// Guard clause against non-integer parameters.
+			try
+			{
+				Integer.parseInt( piece );
+			}
+			catch( Exception e )
+			{
+				System.out.println("Time-conversion: Power failure delimeters non integers.");
+				return "";
+			}
+
+			if( piece.length() != 2 )
+			{
+				System.out.println("Time-conversion: Power failure delimeters not spaced correctly.");
+				return "";
+			}
+		}
+
+		String output = String.format("1111-%s-%s %s:%s:00", pieces[0], pieces[1], pieces[2], pieces[3]);
+		return output;
+	}
+
 
 
 	/**
@@ -569,8 +639,8 @@ public class Meter
 
 		switch( field )
 		{
-			case Meter_id:
-				datum = "";
+			case Meter_name:
+				datum = "MName";
 				break;
 
 			case Meter_password:
@@ -589,23 +659,23 @@ public class Meter
 				datum = "RstTim";
 				break;
 			
-			case Energy_used:
+			case Energy_used_since_reset:
 				datum = "PwrData";
 				break;
 
-			case Energy_load:
+			case Current_power_used:
 				datum = "PwrData";
 				break;
 			
 			case Power_failure_last:
 				datum = "PwrFail";
 				break;
-			
-			case Alarm_audible:
-				datum = "Alarm";
+
+			case Power_restore_last:
+				datum = "PwrFail";
 				break;
 			
-			case Alarm_one_enabled:
+			case Alarm_audible:
 				datum = "Alarm";
 				break;
 
@@ -613,16 +683,8 @@ public class Meter
 				datum = "Alarm";
 				break;
 
-			case Alarm_two_enabled:
-				datum = "Alarm";
-				break;
-
 			case Alarm_two_thresh:
 				datum = "Alarm";
-				break;
-
-			case Emergency_buffer:
-				datum = "Emer";
 				break;
 
 			case Emergency_button_enabled:
@@ -637,16 +699,16 @@ public class Meter
 				datum = "Relay";
 				break;
 
-			case Firmware_version_command_board:
-				datum = "CBver";
-				break;
-
 			case Energy_used_previous_day:
 				datum = "Stat";
 				break;
 
 			case Energy_used_lifetime:
 				datum = "Stat";
+				break;
+
+			case Lights_enabled:
+				datum = "Lights";
 				break;
 
 			default:
@@ -657,15 +719,16 @@ public class Meter
 		if( datum != "" )
 		{
 			String command = commandBuilder( "Read", datum );
+			String doubled_command = command + command;
 
 			Client client = new Client();
 			String response = "";
 
 			for( int i = 0; i < SEND_ATTEMPTS; i++ )
 			{
-				System.out.println("\nSending to id: " + id() + " >> " + command );
+				System.out.println("\nSending to id: " + id() + " >> " + doubled_command );
 
-				response = client.communicate( ip(), command );
+				response = client.communicate( ip(), doubled_command );
 				
 				if( response != "" )
 				{

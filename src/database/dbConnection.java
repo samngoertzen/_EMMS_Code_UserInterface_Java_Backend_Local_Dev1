@@ -62,13 +62,25 @@ public class dbConnection
         // ---------------------------------------
         //      Test getCommandsForMeter
         // ---------------------------------------
-        String[][] test = getCommandsForMeter("AB:CD:EF:gH");
-        System.out.println( Arrays.deepToString(test) );
+        // String[][] test = getCommandsForMeter("AB:CD:EF:gH");
+        // System.out.println( Arrays.deepToString(test) );
+
+        // ---------------------------------------
+        //      Test getOnlineMeterIPs
+        // ---------------------------------------
+        // System.out.println( Arrays.deepToString( getOnlineMeterIPs() ) );
+
+        // ---------------------------------------
+        //      Test 
+        // ---------------------------------------
+        // setAllMetersOffline();
 
         // ---------------------------------------
         //      Test logSendAttempt
         // ---------------------------------------
         // logSendAttempt("41");
+        
+
 	}
 
 
@@ -132,6 +144,24 @@ public class dbConnection
         {
             // SQL failure
             return false;
+        }
+    }
+
+    /**
+     * Sets all meters in the database offline.
+     * @author Bennett Andrews
+     */
+    public static void setAllMetersOffline()
+    {
+        String statement = "UPDATE Meters SET Online='0'";
+
+        try
+        {
+            sendMySQL( statement );
+        }
+        catch( Exception e )
+        {
+            System.out.println("Unable to set all meters as offline.");
         }
     }
 
@@ -237,6 +267,37 @@ public class dbConnection
         }
     }
 
+    /**
+     * Fetches all meter IPs of meters that are flagged online in the database.
+     * @author Bennett Andrews
+     * @return Array of string meter ids
+     */
+    public static String[] getOnlineMeterIPs()
+    {
+        String statement = "SELECT IP_address FROM Meters WHERE( Online='1' );";
+
+        try 
+        {
+            String[][] response = sendMySQL(statement); // This returns in array format [ [ip1], [ip2], [ip3], ... ]
+                                                        // We want to convert this to [ip1, ip2, ip3... ]
+
+            String[] parsedResponse = new String[ response.length ];
+
+            for( int i = 0; i < response.length; i++ )
+            {
+                parsedResponse[i] = response[i][0];
+            }
+            // now it is good to go!
+
+            return parsedResponse;
+        } 
+        catch (Exception e) 
+        {
+            // SQL failure
+            return new String[]{"error"};
+        }
+    }
+
 
     /**
      * Call this function when an Action command is sent to the WiFi board.
@@ -338,7 +399,7 @@ public class dbConnection
         try 
         {
             // Register JDBC driver
-            Class.forName(JDBC_DRIVER);
+            Class.forName( JDBC_DRIVER );
 
             // Open a connection
             conn = DriverManager.getConnection(
