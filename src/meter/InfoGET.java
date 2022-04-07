@@ -32,7 +32,7 @@ public enum InfoGET
 	Alarm_two_thresh, 
 	Emergency_button_enabled, 
 	Emergency_button_allocation, 
-	Lights_enabled,
+	// Lights_enabled,
 	Relay, 
 	ModInfo00,
 	ModInfo01,

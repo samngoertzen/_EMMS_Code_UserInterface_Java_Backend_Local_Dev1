@@ -17,6 +17,8 @@ public class Meter
 
 	private static final String CURRENT_CENTURY = "20"; // i.e. 20 is for years 2000 to 2099.
 
+	private static final String DEFAULT_DATUM = "NODATA"; // data placeholder, overriden by actual meter data
+
 	// Stores all meter object data relevant to live meters.
 	HashMap<InfoGET, String> data =  new HashMap<InfoGET, String>();
 
@@ -56,7 +58,7 @@ public class Meter
 	{
 		for( InfoGET datum : InfoGET.values() )
 		{
-			data.put( datum, "9");
+			data.put( datum, DEFAULT_DATUM );
 		}
 	}
 
@@ -76,7 +78,7 @@ public class Meter
 	 */
 	public void setDatum( InfoGET field, String value )
 	{
-		System.out.println("MO - Setting " + field + " to " + value );
+		System.out.println("setDatum: Setting " + field + " to " + value );
 		data.put( field, value );
 	}
 
@@ -220,9 +222,11 @@ public class Meter
 		{
 			String value = getDatum( field );
 			
-			if( (value != "") && (value != null) )
+			if( (value != "") &&
+			    (value != null) && 
+				(value != DEFAULT_DATUM ) )
 			{
-				System.out.println("DB - Setting " + field + " to " + value );
+				System.out.println("pushDB -> Setting " + field + " to " + value );
 				dbConnection.setTo( value, field, id() );
 			}	
 		}
@@ -269,6 +273,42 @@ public class Meter
 		updateDatum( InfoGET.Emergency_button_enabled );	// Updates ALL Emergency Button values
 		updateDatum( InfoGET.Relay );
 		updateDatum( InfoGET.Energy_used_lifetime );		// Updates all Stats values
+
+		updateDatum( InfoGET.ModInfo00 );
+		updateDatum( InfoGET.ModInfo01 );
+		updateDatum( InfoGET.ModInfo02 );
+		updateDatum( InfoGET.ModInfo03 );
+		updateDatum( InfoGET.ModInfo04 );
+
+		updateDatum( InfoGET.ModInfo10 );
+		updateDatum( InfoGET.ModInfo11 );
+		updateDatum( InfoGET.ModInfo12 );
+		updateDatum( InfoGET.ModInfo13 );
+		updateDatum( InfoGET.ModInfo14 );
+
+		updateDatum( InfoGET.ModInfo20 );
+		updateDatum( InfoGET.ModInfo21 );
+		updateDatum( InfoGET.ModInfo22 );
+		updateDatum( InfoGET.ModInfo23 );
+		updateDatum( InfoGET.ModInfo24 );
+
+		updateDatum( InfoGET.ModInfo30 );
+		updateDatum( InfoGET.ModInfo31 );
+		updateDatum( InfoGET.ModInfo32 );
+		updateDatum( InfoGET.ModInfo33 );
+		updateDatum( InfoGET.ModInfo34 );
+
+		updateDatum( InfoGET.ModInfo40 );
+		updateDatum( InfoGET.ModInfo41 );
+		updateDatum( InfoGET.ModInfo42 );
+		updateDatum( InfoGET.ModInfo43 );
+		updateDatum( InfoGET.ModInfo44 );
+
+		updateDatum( InfoGET.ModInfo50 );
+		updateDatum( InfoGET.ModInfo51 );
+		updateDatum( InfoGET.ModInfo52 );
+		updateDatum( InfoGET.ModInfo53 );
+		updateDatum( InfoGET.ModInfo54 );
 
 		setDatum( InfoGET.Online, "1" );
 	}
@@ -424,7 +464,7 @@ public class Meter
 	 */
 	private void parseResponse( String responseString )
 	{
-		boolean successful_parse = false; // TODO implement this
+		boolean successful_parse = false; // TODO implement this (return whether a command was successful or not)
 
 		String[] responses = Checksum.separateMultipleCommands( responseString );
 
@@ -435,6 +475,12 @@ public class Meter
 			{
 				System.out.println("Parser: Ignoring invalid response.");
 				return;
+			}
+
+			if( response.equals("!Conf;ModInfo$1133*") )
+			{
+				System.out.println("Parser: Ignoring default Conf message.");
+				continue;
 			}
 
 			// Removes start delimeter and everything after (including) the checksum delimeter.
@@ -514,9 +560,9 @@ public class Meter
 					setDatum( InfoGET.Emergency_button_allocation, params[3] );
 					break;
 
-				case "Lights":
-					setDatum( InfoGET.Lights_enabled, (params[2].equals("On")) ? "1" : "0" );
-					break;
+				// case "Lights":
+				// 	setDatum( InfoGET.Lights_enabled, (params[2].equals("On")) ? "1" : "0" );
+				//  break;
 
 				case "Relay":
 					setDatum( InfoGET.Relay, params[2].equals("On") ? "1" : (params[2].equals("Off") ? "0" : "2") );
@@ -533,6 +579,26 @@ public class Meter
 					setDatum( InfoGET.Energy_used_previous_day, params[3] );
 					break;
 
+				case "ModInfo":
+					try
+					{
+						if( params.length == 5 )
+						{
+							modInfoParse( Integer.parseInt(params[2]), Integer.parseInt(params[3]), params[4] );
+						}
+						else
+						{
+							System.out.println("Parser: ModInfo" + params[2] + params[3] + " illegal number of arguments.");
+						}
+						
+					}
+					catch( NumberFormatException e )
+					{
+						System.out.println("Parser: ModInfo index non integer!");
+					}
+					
+					break;
+
 				default:
 					break;
 			}
@@ -543,6 +609,152 @@ public class Meter
 		}
 
 		return;
+	}
+
+	/**
+	 * Given the pre-broken parameters from a ModInfo response, set the correct information in the meter object.
+	 * 
+	 * @author Bennett Andrews
+	 * @param moduleIndex First module info index to determine which module
+	 * @param infoIndex Second module info index to determine which bit of info within a module
+	 * @param value String value of the module info.
+	 */
+	private void modInfoParse( int moduleIndex, int infoIndex, String value )
+	{
+		int indexPair = 10 * moduleIndex + infoIndex; // This puts it into the format ModInfo23 -> (int) 23
+
+		switch( indexPair )
+		{
+			case 00:
+				setDatum( InfoGET.ModInfo00, value );
+				break;
+
+			case 01:
+				setDatum( InfoGET.ModInfo01, value );
+				break;
+
+			case 02:
+				setDatum( InfoGET.ModInfo02, value );
+				break;
+
+			case 03:
+				setDatum( InfoGET.ModInfo03, value );
+				break;
+
+			case 04:
+				setDatum( InfoGET.ModInfo04, value );
+				break;
+
+
+
+			case 10:
+				setDatum( InfoGET.ModInfo10, value );
+				break;
+
+			case 11:
+				setDatum( InfoGET.ModInfo11, value );
+				break;
+
+			case 12:
+				setDatum( InfoGET.ModInfo12, value );
+				break;
+
+			case 13:
+				setDatum( InfoGET.ModInfo13, value );
+				break;
+
+			case 14:
+				setDatum( InfoGET.ModInfo14, value );
+				break;
+
+
+
+			case 20:
+				setDatum( InfoGET.ModInfo20, value );
+				break;
+
+			case 21:
+				setDatum( InfoGET.ModInfo21, value );
+				break;
+
+			case 22:
+				setDatum( InfoGET.ModInfo22, value );
+				break;
+
+			case 23:
+				setDatum( InfoGET.ModInfo23, value );
+				break;
+
+			case 24:
+				setDatum( InfoGET.ModInfo24, value );
+				break;
+
+
+			
+			case 30:
+				setDatum( InfoGET.ModInfo30, value );
+				break;
+
+			case 31:
+				setDatum( InfoGET.ModInfo31, value );
+				break;
+
+			case 32:
+				setDatum( InfoGET.ModInfo32, value );
+				break;
+
+			case 33:
+				setDatum( InfoGET.ModInfo33, value );
+				break;
+
+			case 34:
+				setDatum( InfoGET.ModInfo34, value );
+				break;
+
+
+
+			case 40:
+				setDatum( InfoGET.ModInfo40, value );
+				break;
+
+			case 41:
+				setDatum( InfoGET.ModInfo41, value );
+				break;
+
+			case 42:
+				setDatum( InfoGET.ModInfo42, value );
+				break;
+
+			case 43:
+				setDatum( InfoGET.ModInfo43, value );
+				break;
+
+			case 44:
+				setDatum( InfoGET.ModInfo44, value );
+				break;
+
+
+
+			case 50:
+				setDatum( InfoGET.ModInfo50, value );
+				break;
+
+			case 51:
+				setDatum( InfoGET.ModInfo51, value );
+				break;
+
+			case 52:
+				setDatum( InfoGET.ModInfo52, value );
+				break;
+
+			case 53:
+				setDatum( InfoGET.ModInfo53, value );
+				break;
+
+			case 54:
+				setDatum( InfoGET.ModInfo54, value );
+				break;
+		}
 	}
 
 
@@ -707,9 +919,143 @@ public class Meter
 				datum = "Stat";
 				break;
 
-			case Lights_enabled:
-				datum = "Lights";
+			// case Lights_enabled:
+			// 	datum = "Lights";
+			// 	break;
+
+
+
+			case ModInfo00:
+				datum = "ModInfo;0;0";
 				break;
+
+			case ModInfo01:
+				datum = "ModInfo;0;1";
+				break;
+
+			case ModInfo02:
+				datum = "ModInfo;0;2";
+				break;
+
+			case ModInfo03:
+				datum = "ModInfo;0;3";
+				break;
+
+			case ModInfo04:
+				datum = "ModInfo;0;4";
+				break;
+
+
+
+			case ModInfo10:
+				datum = "ModInfo;1;0";
+				break;
+
+			case ModInfo11:
+				datum = "ModInfo;1;1";
+				break;
+
+			case ModInfo12:
+				datum = "ModInfo;1;2";
+				break;
+
+			case ModInfo13:
+				datum = "ModInfo;1;3";
+				break;
+
+			case ModInfo14:
+				datum = "ModInfo;1;4";
+				break;
+
+
+
+			case ModInfo20:
+				datum = "ModInfo;2;0";
+				break;
+
+			case ModInfo21:
+				datum = "ModInfo;2;1";
+				break;
+
+			case ModInfo22:
+				datum = "ModInfo;2;2";
+				break;
+
+			case ModInfo23:
+				datum = "ModInfo;2;3";
+				break;
+
+			case ModInfo24:
+				datum = "ModInfo;2;4";
+				break;
+
+			
+
+			case ModInfo30:
+				datum = "ModInfo;3;0";
+				break;
+
+			case ModInfo31:
+				datum = "ModInfo;3;1";
+				break;
+
+			case ModInfo32:
+				datum = "ModInfo;3;2";
+				break;
+
+			case ModInfo33:
+				datum = "ModInfo;3;3";
+				break;
+
+			case ModInfo34:
+				datum = "ModInfo;3;4";
+				break;
+
+
+
+			case ModInfo40:
+				datum = "ModInfo;4;0";
+				break;
+
+			case ModInfo41:
+				datum = "ModInfo;4;1";
+				break;
+
+			case ModInfo42:
+				datum = "ModInfo;4;2";
+				break;
+
+			case ModInfo43:
+				datum = "ModInfo;4;3";
+				break;
+
+			case ModInfo44:
+				datum = "ModInfo;4;4";
+				break;
+
+			
+
+			case ModInfo50:
+				datum = "ModInfo;5;0";
+				break;
+
+			case ModInfo51:
+				datum = "ModInfo;5;1";
+				break;
+
+			case ModInfo52:
+				datum = "ModInfo;5;2";
+				break;
+
+			case ModInfo53:
+				datum = "ModInfo;5;3";
+				break;
+
+			case ModInfo54:
+				datum = "ModInfo;5;4";
+				break;
+
+
 
 			default:
 				System.out.println("InfoGET value not available for update.");

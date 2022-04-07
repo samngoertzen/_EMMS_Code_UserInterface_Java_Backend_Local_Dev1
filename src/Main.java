@@ -14,8 +14,8 @@ public class Main
     private static final int  IPV4_ADDRESS_2_END   = 168;
     private static final int  IPV4_ADDRESS_3_START = 1;
     private static final int  IPV4_ADDRESS_3_END   = 1;
-    private static final int  IPV4_ADDRESS_4_START = 3;
-    private static final int  IPV4_ADDRESS_4_END   = 5;
+    private static final int  IPV4_ADDRESS_4_START = 8;
+    private static final int  IPV4_ADDRESS_4_END   = 8;
 
 
     MeterScan meterScan;
