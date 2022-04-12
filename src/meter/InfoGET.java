@@ -5,9 +5,7 @@ package meter;
  * @author ZacheryHolsinger
  * Enum used to lock in the set information you can get from the meter.
  * 
- * Command board commands are Read;~ while Wifi Commands are Set;~
  * 
- * @api *!*IMPORTANT*!* - Order of enum values must be the same between InfoGET and InfoSET!
  */
 public enum InfoGET 
 {

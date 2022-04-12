@@ -206,7 +206,7 @@ public class Checksum
         }
     }
 
-    // TODO!!!
+    //  !!!
     public static String[] separateMultipleCommands( String commandstr )
     {
         return commandstr.split( "(?=\\" + START_DELIMETER + ")" ); // regex is pain. this is a zero-width lookahead?
