@@ -384,7 +384,7 @@ public class dbConnection
 	 */
 	public static String[][] sendMySQL(String statement) 
     {
-        String DB_IP = "127.0.0.1";
+        String DB_IP = MeterScan.getMyIp();
 
 		Connection conn = null;
         Statement stmt = null;
@@ -519,7 +519,7 @@ public class dbConnection
 	 */
 	public static boolean testConnection() 
     {
-        String DB_IP = "127.0.0.1";
+        String DB_IP = MeterScan.getMyIp();
 
 		Connection conn = null;
         Statement stmt = null;

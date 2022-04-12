@@ -21,6 +21,12 @@ public class Checksum
      */
     public static boolean isValidCommand( String command )
     {
+        // remove all whitespace
+        command = command.replaceAll("\\s","");
+
+        // remove all null terminators
+        command = command.replaceAll("\\x00","");
+
         // Guard clause against null commands
         if ( command.length() == 0 ) 
         {
@@ -38,10 +44,12 @@ public class Checksum
 
         if ( !command.endsWith( STOP_DELIMETER ) )
         {
+            System.out.println( (int) command.charAt( command.length() - 1) );
             System.out.println("Checksum: Invalid command syntax. '" + command + "' has no stop delimeter.");
             return  false;
         }
 
+        
         // Ensure that if there are multiple parameters, none of them are null
         if( command.indexOf( ARG_DELIMETER ) > -1)
         {
@@ -209,7 +217,9 @@ public class Checksum
     //  !!!
     public static String[] separateMultipleCommands( String commandstr )
     {
-        return commandstr.split( "(?=\\" + START_DELIMETER + ")" ); // regex is pain. this is a zero-width lookahead?
+        String commandStringFixed = commandstr.replaceAll("\\x00",""); // remove all null terminators
+
+        return commandStringFixed.split( "(?=\\" + START_DELIMETER + ")" ); // regex is pain. this is a zero-width lookahead?
         // https://stackoverflow.com/questions/4416425/how-to-split-string-with-some-separator-but-without-removing-that-separator-in-j
     }
 
@@ -286,6 +296,7 @@ public class Checksum
         // System.out.println( "\nResponse to check: " + response );
         // System.out.println( isVerified(response) );
 
-        System.out.println( Arrays.deepToString( separateMultipleCommands( "!Read;CBver$905*!Read;CBver$905*" ) ) );
+        System.out.println( Arrays.deepToString( separateMultipleCommands( ("#!Set;WiFiMAC;c6:7c:80$1521*" + '\0') ) ) );
+        System.out.println( Checksum.isValidCommand( "!Set;WiFiMAC;c6:7c:80$1521*" ) );
     }
 }

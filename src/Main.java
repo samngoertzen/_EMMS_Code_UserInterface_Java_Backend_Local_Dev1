@@ -5,7 +5,6 @@ import meter.Meter;
 import wireless.MeterScan;
 
 
-
 public class Main 
 {
     private static final int  IPV4_ADDRESS_1_START = 192;

@@ -218,6 +218,15 @@ public class Meter
 	 */
 	public void pushAllInDB()
 	{
+		// is the meter registered in the database?
+		boolean meterInDB = dbConnection.isMeterInDB( id() );
+		System.out.println("Is meter in the database already? > " + meterInDB);
+
+		if( !meterInDB )
+		{
+			addMeterInDB();
+		}
+
 		for( InfoGET field : InfoGET.values() )
 		{
 			String value = getDatum( field );
@@ -253,13 +262,11 @@ public class Meter
 			throw new IOException("Meter is not connected.");
 		}
 
-		// is the meter registered in the database?
-		boolean meterInDB = dbConnection.isMeterInDB( id() );
-		System.out.println("Is meter in the database already? > " + meterInDB);
+		updateDatum( InfoGET.Meter_id ); // important, do first.
 
-		if( !meterInDB )
+		if( id().equals( DEFAULT_DATUM ) )
 		{
-			addMeterInDB();
+			throw new IOException("Could not fetch Meter ID!");
 		}
 
 		updateDatum( InfoGET.Meter_name );
@@ -392,19 +399,20 @@ public class Meter
 			// If we find a confirmed meter, we don't need to keep sending confirmation attempts.
 			if( is_meter == true )
 			{
-				System.out.println("test duck");
 				break; 
 			}
 
 			response = ""; // reset response every loop
 
-			String command = commandBuilder( "MName" );
+			String command = commandBuilder( "Mod;Read;WiFiMAC" );
 			String doubled_command = command + command;
 
 			response = client.communicate( ipv4, doubled_command );
 			System.out.println( "Online Check: > " + response );
 
 			String[] response_list = Checksum.separateMultipleCommands( response );
+
+			System.out.println( Arrays.deepToString( response_list ) );
 
 			for( String response_item : response_list )
 			{
@@ -416,7 +424,7 @@ public class Meter
 				}
 				else
 				{
-					// it is not a meter and the default false carries through
+					continue;			// it is not a meter and the default false carries through
 				}
 			}
 		}
@@ -468,13 +476,15 @@ public class Meter
 
 		String[] responses = Checksum.separateMultipleCommands( responseString );
 
+		System.out.println( Arrays.deepToString( responses ) );
+
 		for( String response : responses )
 		{
 			System.out.println( "Parser: Command found >> " + response );
 			if( !Checksum.isVerified( response ) )
 			{
 				System.out.println("Parser: Ignoring invalid response.");
-				return;
+				continue;
 			}
 
 			if( response.equals("!Conf;ModInfo$1133*") )
@@ -522,6 +532,10 @@ public class Meter
 			{
 				case "MName":
 					setDatum( InfoGET.Meter_name, params[2] );
+					break;
+
+				case "WiFiMAC":
+					setDatum( InfoGET.Meter_id, params[2] );
 					break;
 
 				case "Pass":
@@ -847,76 +861,80 @@ public class Meter
 	 */
 	private void updateDatum( InfoGET field )
 	{
-		String datum = "";
+		String readCommand = "";
 
 		switch( field )
 		{
 			case Meter_name:
-				datum = "MName";
+				readCommand = "Read;MName";
+				break;
+
+			case Meter_id:
+				readCommand = "Mod;Read;WiFiMAC";
 				break;
 
 			case Meter_password:
-				datum = "Pass";
+				readCommand = "Read;Pass";
 				break;
 			
 			case Meter_time:
-				datum = "Time";
+				readCommand = "Read;Time";
 				break;
 			
 			case Energy_allocation:
-				datum = "EnAl";
+				readCommand = "Read;EnAl";
 				break;
 			
 			case Energy_allocation_reset_time:
-				datum = "RstTim";
+				readCommand = "Read;RstTim";
 				break;
 			
 			case Energy_used_since_reset:
-				datum = "PwrData";
+				readCommand = "Read;PwrData";
 				break;
 
 			case Current_power_used:
-				datum = "PwrData";
+				readCommand = "Read;PwrData";
 				break;
 			
 			case Power_failure_last:
-				datum = "PwrFail";
+				readCommand = "Read;PwrFail";
 				break;
 
 			case Power_restore_last:
-				datum = "PwrFail";
+				readCommand = "Read;PwrFail";
 				break;
 			
 			case Alarm_audible:
-				datum = "Alarm";
+				readCommand = "Read;Alarm";
 				break;
 
 			case Alarm_one_thresh:
-				datum = "Alarm";
+				readCommand = "Read;Alarm";
 				break;
 
 			case Alarm_two_thresh:
-				datum = "Alarm";
+				readCommand = "Read;Alarm";
 				break;
 
 			case Emergency_button_enabled:
-				datum = "Emer";
+				readCommand = "Read;Emer";
 				break;
 
 			case Emergency_button_allocation:
-				datum = "Emer";
+				readCommand = "Read;Emer";
 				break;
 
 			case Relay:
-				datum = "Relay";
+				readCommand = "Read;Relay";
 				break;
 
 			case Energy_used_previous_day:
-				datum = "Stat";
+				readCommand = "Read;Stat";
 				break;
 
 			case Energy_used_lifetime:
-				datum = "Stat";
+				readCommand = "Read;Stat";
 				break;
 
 			// case Lights_enabled:
@@ -926,133 +944,133 @@ public class Meter
 
 
 			case ModInfo00:
-				datum = "ModInfo;0;0";
+				readCommand = "Read;ModInfo;0;0";
 				break;
 
 			case ModInfo01:
-				datum = "ModInfo;0;1";
+				readCommand = "Read;ModInfo;0;1";
 				break;
 
 			case ModInfo02:
-				datum = "ModInfo;0;2";
+				readCommand = "Read;ModInfo;0;2";
 				break;
 
 			case ModInfo03:
-				datum = "ModInfo;0;3";
+				readCommand = "Read;ModInfo;0;3";
 				break;
 
 			case ModInfo04:
-				datum = "ModInfo;0;4";
+				readCommand = "Read;ModInfo;0;4";
 				break;
 
 
 
 			case ModInfo10:
-				datum = "ModInfo;1;0";
+				readCommand = "Read;ModInfo;1;0";
 				break;
 
 			case ModInfo11:
-				datum = "ModInfo;1;1";
+				readCommand = "Read;ModInfo;1;1";
 				break;
 
 			case ModInfo12:
-				datum = "ModInfo;1;2";
+				readCommand = "Read;ModInfo;1;2";
 				break;
 
 			case ModInfo13:
-				datum = "ModInfo;1;3";
+				readCommand = "Read;ModInfo;1;3";
 				break;
 
 			case ModInfo14:
-				datum = "ModInfo;1;4";
+				readCommand = "Read;ModInfo;1;4";
 				break;
 
 
 
 			case ModInfo20:
-				datum = "ModInfo;2;0";
+				readCommand = "Read;ModInfo;2;0";
 				break;
 
 			case ModInfo21:
-				datum = "ModInfo;2;1";
+				readCommand = "Read;ModInfo;2;1";
 				break;
 
 			case ModInfo22:
-				datum = "ModInfo;2;2";
+				readCommand = "Read;ModInfo;2;2";
 				break;
 
 			case ModInfo23:
-				datum = "ModInfo;2;3";
+				readCommand = "Read;ModInfo;2;3";
 				break;
 
 			case ModInfo24:
-				datum = "ModInfo;2;4";
+				readCommand = "Read;ModInfo;2;4";
 				break;
 
 			
 
 			case ModInfo30:
-				datum = "ModInfo;3;0";
+				readCommand = "Read;ModInfo;3;0";
 				break;
 
 			case ModInfo31:
-				datum = "ModInfo;3;1";
+				readCommand = "Read;ModInfo;3;1";
 				break;
 
 			case ModInfo32:
-				datum = "ModInfo;3;2";
+				readCommand = "Read;ModInfo;3;2";
 				break;
 
 			case ModInfo33:
-				datum = "ModInfo;3;3";
+				readCommand = "Read;ModInfo;3;3";
 				break;
 
 			case ModInfo34:
-				datum = "ModInfo;3;4";
+				readCommand = "Read;ModInfo;3;4";
 				break;
 
 
 
 			case ModInfo40:
-				datum = "ModInfo;4;0";
+				readCommand = "Read;ModInfo;4;0";
 				break;
 
 			case ModInfo41:
-				datum = "ModInfo;4;1";
+				readCommand = "Read;ModInfo;4;1";
 				break;
 
 			case ModInfo42:
-				datum = "ModInfo;4;2";
+				readCommand = "Read;ModInfo;4;2";
 				break;
 
 			case ModInfo43:
-				datum = "ModInfo;4;3";
+				readCommand = "Read;ModInfo;4;3";
 				break;
 
 			case ModInfo44:
-				datum = "ModInfo;4;4";
+				readCommand = "Read;ModInfo;4;4";
 				break;
 
 			
 
 			case ModInfo50:
-				datum = "ModInfo;5;0";
+				readCommand = "Read;ModInfo;5;0";
 				break;
 
 			case ModInfo51:
-				datum = "ModInfo;5;1";
+				readCommand = "Read;ModInfo;5;1";
 				break;
 
 			case ModInfo52:
-				datum = "ModInfo;5;2";
+				readCommand = "Read;ModInfo;5;2";
 				break;
 
 			case ModInfo53:
-				datum = "ModInfo;5;3";
+				readCommand = "Read;ModInfo;5;3";
 				break;
 
 			case ModInfo54:
-				datum = "ModInfo;5;4";
+				readCommand = "Read;ModInfo;5;4";
 				break;
 
 
@@ -1062,9 +1080,9 @@ public class Meter
 				break;
 		}
 
-		if( datum != "" )
+		if( readCommand != "" )
 		{
-			String command = commandBuilder( "Read", datum );
+			String command = commandBuilder( readCommand );
 			String doubled_command = command + command;
 
 			Client client = new Client();

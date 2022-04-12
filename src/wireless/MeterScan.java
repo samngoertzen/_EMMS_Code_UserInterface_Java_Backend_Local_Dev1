@@ -95,7 +95,8 @@ public class MeterScan
 			ip = null;
 		}
 
-		return ip;
+		// TODO
+		return "127.0.0.1";
 	}
 	
 	/**
