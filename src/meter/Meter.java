@@ -17,7 +17,7 @@ public class Meter
 
 	private static final String CURRENT_CENTURY = "20"; // i.e. 20 is for years 2000 to 2099.
 
-	private static final String DEFAULT_DATUM = "NODATA"; // data placeholder, overriden by actual meter data
+	public static final String DEFAULT_DATUM = "NODATA"; // data placeholder, overriden by actual meter data
 
 	// Stores all meter object data relevant to live meters.
 	HashMap<InfoGET, String> data =  new HashMap<InfoGET, String>();
@@ -120,15 +120,16 @@ public class Meter
 
 		try 
 		{
+			pushCommands();
 			update();
 			pushAllInDB();
-			pushCommands();
 			return true;
 		} 
 		catch (Exception e) 
 		{
 			e.printStackTrace();
 			System.out.println("! Run failed.");
+			setDatum( InfoGET.Online, "0" );
 			return false;
 		}
 	}
@@ -574,10 +575,6 @@ public class Meter
 					setDatum( InfoGET.Emergency_button_allocation, params[3] );
 					break;
 
-				// case "Lights":
-				// 	setDatum( InfoGET.Lights_enabled, (params[2].equals("On")) ? "1" : "0" );
-				//  break;
-
 				case "Relay":
 					setDatum( InfoGET.Relay, params[2].equals("On") ? "1" : (params[2].equals("Off") ? "0" : "2") );
 					// i know, nested ternary operators are stupid.
@@ -859,7 +856,7 @@ public class Meter
 	 * @author Bennett Andrews
 	 * @param field - InfoGET field to be updated
 	 */
-	private void updateDatum( InfoGET field )
+	public void updateDatum( InfoGET field )
 	{
 		String readCommand = "";
 

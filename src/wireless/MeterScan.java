@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.stream.Stream;
 
+import meter.InfoGET;
 import meter.Meter;
 
 /**
@@ -247,7 +248,10 @@ public class MeterScan
 	{
 		try
 		{
-			confirmed_meters.add( new Meter( ipv4 ) );
+			Meter newMeter = new Meter( ipv4 );
+			newMeter.updateDatum( InfoGET.Meter_id );
+			confirmed_meters.add( newMeter );
+			System.out.println("Added meter " + ipv4 );
 			return true;
 		}
 		catch( Exception e )

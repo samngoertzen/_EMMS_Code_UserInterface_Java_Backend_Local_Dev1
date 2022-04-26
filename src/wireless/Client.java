@@ -14,7 +14,7 @@ public class Client
 	private String timeOut = null;
 
 	private final int METER_TCP_PORT = 8001;
-	private static final int TIMEOUT = 1000;
+	private static final int TIMEOUT = 500;
 	
 	/**
 	 * Polymorphed communicate function to use the default meter port.

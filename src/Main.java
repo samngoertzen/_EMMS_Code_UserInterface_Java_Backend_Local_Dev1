@@ -1,4 +1,5 @@
 import java.util.HashMap;
+import java.util.Iterator;
 
 import database.dbConnection;
 import meter.Meter;
@@ -13,8 +14,8 @@ public class Main
     private static final int  IPV4_ADDRESS_2_END   = 168;
     private static final int  IPV4_ADDRESS_3_START = 77;
     private static final int  IPV4_ADDRESS_3_END   = 77;
-    private static final int  IPV4_ADDRESS_4_START = 0;
-    private static final int  IPV4_ADDRESS_4_END   = 255;
+    private static final int  IPV4_ADDRESS_4_START = 10;
+    private static final int  IPV4_ADDRESS_4_END   = 20;
 
 
     MeterScan meterScan;
@@ -94,16 +95,34 @@ public class Main
             }
         }
 
-        for( Meter meter : metersConnected.values() )
+        Iterator<String> iterator = metersConnected.keySet().iterator();
+
+        while( iterator.hasNext() )
         {
+            String id = iterator.next();
+            Meter meter = metersConnected.get( id );
+
             boolean connected = meter.run();
 
             if( !connected )
             {
                 System.out.println("Meter " + meter.id() + " offline. Removing.");
                 meter.setOfflineInDB();
-                metersConnected.remove( meter.id() );
+                iterator.remove();
             }
         }
+
+        
+        // for( Meter meter : metersConnected.values() )
+        // {
+        //     boolean connected = meter.run();
+
+        //     if( !connected )
+        //     {
+        //         System.out.println("Meter " + meter.id() + " offline. Removing.");
+        //         meter.setOfflineInDB();
+        //         metersConnected.remove( meter.id() ); // FIX THIS
+        //     }
+        // }
     }
 }
