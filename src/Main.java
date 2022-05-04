@@ -15,7 +15,7 @@ public class Main
     private static final int  IPV4_ADDRESS_3_START = 77;
     private static final int  IPV4_ADDRESS_3_END   = 77;
     private static final int  IPV4_ADDRESS_4_START = 10;
-    private static final int  IPV4_ADDRESS_4_END   = 20;
+    private static final int  IPV4_ADDRESS_4_END   = 209;
 
 
     MeterScan meterScan;
@@ -111,18 +111,5 @@ public class Main
                 iterator.remove();
             }
         }
-
-        
-        // for( Meter meter : metersConnected.values() )
-        // {
-        //     boolean connected = meter.run();
-
-        //     if( !connected )
-        //     {
-        //         System.out.println("Meter " + meter.id() + " offline. Removing.");
-        //         meter.setOfflineInDB();
-        //         metersConnected.remove( meter.id() ); // FIX THIS
-        //     }
-        // }
     }
 }

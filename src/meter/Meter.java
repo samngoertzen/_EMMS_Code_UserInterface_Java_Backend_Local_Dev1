@@ -13,7 +13,7 @@ import wireless.Client;
 public class Meter 
 {
 	// Number of times a command should be sent to receive a response before giving up.
-	private static final int SEND_ATTEMPTS = 3;
+	private static final int SEND_ATTEMPTS = 2;
 
 	private static final String CURRENT_CENTURY = "20"; // i.e. 20 is for years 2000 to 2099.
 
