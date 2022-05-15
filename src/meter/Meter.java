@@ -22,6 +22,8 @@ public class Meter
 	// Stores all meter object data relevant to live meters.
 	HashMap<InfoGET, String> data =  new HashMap<InfoGET, String>();
 
+	private static final int VERBOSITY = 0; // Global variable for how much output we want. 0 = none, 1 = errors only, 2 = all output.
+
 
 
 	/**
@@ -78,7 +80,10 @@ public class Meter
 	 */
 	public void setDatum( InfoGET field, String value )
 	{
-		System.out.println("setDatum: Setting " + field + " to " + value );
+		if( VERBOSITY >= 2 )
+		{
+			System.out.println("setDatum: Setting " + field + " to " + value );
+		}
 		data.put( field, value );
 	}
 
@@ -116,7 +121,10 @@ public class Meter
 	 */
 	public boolean run()
 	{
-		System.out.println("\n\nRunning meter " + id() );
+		if( VERBOSITY >= 2 )
+		{
+			System.out.println("\n\nRunning meter " + id() );
+		}
 
 		try 
 		{
@@ -128,7 +136,12 @@ public class Meter
 		catch (Exception e) 
 		{
 			e.printStackTrace();
-			System.out.println("! Run failed.");
+
+			if( VERBOSITY >= 1 )
+			{
+				System.out.println("! Run failed.");
+			}
+
 			setDatum( InfoGET.Online, "0" );
 			return false;
 		}
@@ -152,7 +165,10 @@ public class Meter
 			throw new IOException("Meter is not connected.");
 		}
 
-		System.out.println("\n\nPushing commands.\n\n");
+		if( VERBOSITY >= 2 )
+		{
+			System.out.println("\n\nPushing commands.\n\n");
+		}
 
 		Client client = new Client();
 		
@@ -176,7 +192,10 @@ public class Meter
 			{
 				for( int i = 0; i < SEND_ATTEMPTS; i++ )
 				{
-					System.out.println("Sending command " + doubled_command + " to meterid " + id() );
+					if( VERBOSITY >= 2 )
+					{
+						System.out.println("Sending command " + doubled_command + " to meterid " + id() );
+					}
 					response = client.communicate( ip() , doubled_command );
 
 					if( response != "" ) break;	// Stop resending commands if we get a response
@@ -189,7 +208,10 @@ public class Meter
 			} 
 			catch( Exception e ) 
 			{
-				System.out.println("command send error");
+				if( VERBOSITY >= 1 )
+				{
+					System.out.println("command send error");				
+				}
 			}	
 
 			// Wait 300 ms then move to the next command.
@@ -221,7 +243,11 @@ public class Meter
 	{
 		// is the meter registered in the database?
 		boolean meterInDB = dbConnection.isMeterInDB( id() );
-		System.out.println("Is meter in the database already? > " + meterInDB);
+
+		if( VERBOSITY >= 2 )
+		{
+			System.out.println("Is meter in the database already? > " + meterInDB);
+		}
 
 		if( !meterInDB )
 		{
@@ -236,7 +262,10 @@ public class Meter
 			    (value != null) && 
 				(value != DEFAULT_DATUM ) )
 			{
-				System.out.println("pushDB -> Setting " + field + " to " + value );
+				if( VERBOSITY >= 2 )
+				{
+					System.out.println("pushDB -> Setting " + field + " to " + value );
+				}
 				dbConnection.setTo( value, field, id() );
 			}	
 		}
@@ -255,7 +284,10 @@ public class Meter
 	 */
 	public void update() throws IOException
 	{
-		System.out.println("UPDATING datum on Meter_id: " + id() );
+		if( VERBOSITY >= 2 )
+		{
+			System.out.println("UPDATING datum on Meter_id: " + id() );
+		}
 
 		// is the meter online?
 		if( !isConnected() )
@@ -319,17 +351,6 @@ public class Meter
 		updateDatum( InfoGET.ModInfo54 );
 
 		setDatum( InfoGET.Online, "1" );
-	}
-
-	/**
-	 * Tests to see if configured Database is active
-	 * 
-	 * Already Done in dbConnection Code, this is an extension
-	 */
-	public boolean testDBConnection()
-	{
-		boolean isConnected = dbConnection.testConnection();
-		return isConnected;
 	}
 
 	/**
@@ -409,15 +430,21 @@ public class Meter
 			String doubled_command = command + command;
 
 			response = client.communicate( ipv4, doubled_command );
-			System.out.println( "Online Check: > " + response );
+
+			if( VERBOSITY >= 2 )
+			{
+				System.out.println( "Online Check: > " + response );
+			}
 
 			String[] response_list = Checksum.separateMultipleCommands( response );
 
-			System.out.println( Arrays.deepToString( response_list ) );
-
 			for( String response_item : response_list )
 			{
-				System.out.println("Online Check: Single Command > " + response_item );
+				if( VERBOSITY >= 2 )
+				{
+					System.out.println("Online Check: Single Command > " + response_item );
+				}
+
 				if( Checksum.isVerified( response_item ) ) // If we get a verified command, this is a meter!
 				{
 					is_meter = true;
@@ -477,20 +504,33 @@ public class Meter
 
 		String[] responses = Checksum.separateMultipleCommands( responseString );
 
-		System.out.println( Arrays.deepToString( responses ) );
+		if( VERBOSITY >= 2 )
+		{
+			System.out.println( Arrays.deepToString( responses ) );
+		}
 
 		for( String response : responses )
 		{
-			System.out.println( "Parser: Command found >> " + response );
+			if( VERBOSITY >= 2 )
+			{
+				System.out.println( "Parser: Command found >> " + response );
+			}
+
 			if( !Checksum.isVerified( response ) )
 			{
-				System.out.println("Parser: Ignoring invalid response.");
+				if( VERBOSITY >= 1 )
+				{
+					System.out.println("Parser: Ignoring invalid response.");
+				}
 				continue;
 			}
 
 			if( response.equals("!Conf;ModInfo$1133*") )
 			{
-				System.out.println("Parser: Ignoring default Conf message.");
+				if( VERBOSITY >= 2 )
+				{
+					System.out.println("Parser: Ignoring default Conf message.");
+				}
 				continue;
 			}
 
@@ -506,11 +546,17 @@ public class Meter
 			else if( params[0].equals( "Conf" ) )
 			{
 				// TODO send final confirm.
-				System.out.println("Parser: Confirmation received.");
+				if( VERBOSITY >= 2 )
+				{
+					System.out.println("Parser: Confirmation received.");
+				}
 			}
 			else
 			{
-				System.out.println("Parser: Unable to find command type.");
+				if( VERBOSITY >= 2 )
+				{
+					System.out.println("Parser: Unable to find command type.");
+				}
 			}
 		}
 	}
@@ -525,7 +571,10 @@ public class Meter
 	 */
 	public void parseSetResponse( String[] params )
 	{
-		System.out.println("Parsing params: " + Arrays.toString( params ) );
+		if( VERBOSITY >= 2 )
+		{
+			System.out.println("Parsing params: " + Arrays.toString( params ) );
+		}
 
 		try
 		{
@@ -599,13 +648,19 @@ public class Meter
 						}
 						else
 						{
-							System.out.println("Parser: ModInfo" + params[2] + params[3] + " illegal number of arguments.");
+							if( VERBOSITY >= 2 )
+							{
+								System.out.println("Parser: ModInfo" + params[2] + params[3] + " illegal number of arguments.");
+							}
 						}
 						
 					}
 					catch( NumberFormatException e )
 					{
-						System.out.println("Parser: ModInfo index non integer!");
+						if( VERBOSITY >= 1 )
+						{
+							System.out.println("Parser: ModInfo index non integer!");
+						}
 					}
 					
 					break;
@@ -616,7 +671,10 @@ public class Meter
 		}
 		catch( NullPointerException e )
 		{
-			System.out.println("Invalid Set command.");
+			if( VERBOSITY >= 1 )
+			{
+				System.out.println("Invalid Set command.");
+			}
 		}
 
 		return;
@@ -781,7 +839,10 @@ public class Meter
 	{
 		if( (mmddyy == "") || (mmddyy == null) )
 		{
-			System.out.println("Time-conversion: Time is null");
+			if( VERBOSITY >= 1 )
+			{
+				System.out.println("Time-conversion: Time is null");
+			}
 			return "";
 		}
 
@@ -789,7 +850,10 @@ public class Meter
 
 		if( pieces.length != 3 )
 		{
-			System.out.println("Time-conversion: Incorrect number of parameters.");
+			if( VERBOSITY >= 1 )
+			{
+				System.out.println("Time-conversion: Incorrect number of parameters.");
+			}
 			return "";
 		}
 
@@ -809,7 +873,10 @@ public class Meter
 		// Guard clause against null input
 		if( (pftime == "") || (pftime == null) )
 		{
-			System.out.println("Time-conversion: Time is null");
+			if( VERBOSITY >= 1 )
+			{
+				System.out.println("Time-conversion: Time is null");
+			}
 			return "";
 		}
 
@@ -819,7 +886,10 @@ public class Meter
 		// Guard clause against incorrect formatting/number of parameters.
 		if( pieces.length != 4 )
 		{
-			System.out.println("Time-conversion: Incorrect number of power fail delimeters.");
+			if( VERBOSITY >= 1 )
+			{
+				System.out.println("Time-conversion: Incorrect number of power fail delimeters.");
+			}
 			return "";
 		}
 
@@ -833,13 +903,19 @@ public class Meter
 			}
 			catch( Exception e )
 			{
-				System.out.println("Time-conversion: Power failure delimeters non integers.");
+				if( VERBOSITY >= 1 )
+				{
+					System.out.println("Time-conversion: Power failure delimeters non integers.");
+				}
 				return "";
 			}
 
 			if( piece.length() != 2 )
 			{
-				System.out.println("Time-conversion: Power failure delimeters not spaced correctly.");
+				if( VERBOSITY >= 1 )
+				{
+					System.out.println("Time-conversion: Power failure delimeters not spaced correctly.");
+				}
 				return "";
 			}
 		}
@@ -1073,7 +1149,10 @@ public class Meter
 
 
 			default:
-				System.out.println("InfoGET value not available for update.");
+				if( VERBOSITY >= 1 )
+				{
+					System.out.println("InfoGET value not available for update.");
+				}
 				break;
 		}
 
@@ -1087,7 +1166,10 @@ public class Meter
 
 			for( int i = 0; i < SEND_ATTEMPTS; i++ )
 			{
-				System.out.println("\nSending to id: " + id() + " >> " + doubled_command );
+				if( VERBOSITY >= 2 )
+				{
+					System.out.println("\nSending to id: " + id() + " >> " + doubled_command );
+				}
 
 				response = client.communicate( ip(), doubled_command );
 				
@@ -1097,7 +1179,10 @@ public class Meter
 				}
 			}
 			
-			System.out.println("Received: " + response );
+			if( VERBOSITY >= 2 )
+			{
+				System.out.println("Received: " + response );
+			}
 			parseResponse( response );
 		}
 	}

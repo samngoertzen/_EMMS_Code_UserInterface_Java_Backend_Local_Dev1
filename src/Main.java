@@ -17,6 +17,8 @@ public class Main
     private static final int  IPV4_ADDRESS_4_START = 10;
     private static final int  IPV4_ADDRESS_4_END   = 209;
 
+    private static final int VERBOSITY = 0; // Global variable for how much output we want. 0 = none, 1 = errors only, 2 = all output.
+
 
     MeterScan meterScan;
     HashMap<String, Meter> metersConnected;
@@ -85,12 +87,18 @@ public class Main
 
             if( metersConnected.containsKey( meter.id() ) )
             {
-                System.out.println("Duplicate meter: " + meter.id() );
+                if( VERBOSITY >= 2 )
+                {
+                    System.out.println("Duplicate meter: " + meter.id() );
+                }
                 // do nothing else with meters that are already set up
             }
             else 
             {
-                System.out.println("Inserting new meter: " + meter.id() );
+                if( VERBOSITY >= 2 )
+                {
+                    System.out.println("Inserting new meter: " + meter.id() );
+                }
                 metersConnected.put( meter.id(), meter );
             }
         }
@@ -106,7 +114,10 @@ public class Main
 
             if( !connected )
             {
-                System.out.println("Meter " + meter.id() + " offline. Removing.");
+                if( VERBOSITY >= 2 )
+                {
+                    System.out.println("Meter " + meter.id() + " offline. Removing.");
+                }
                 meter.setOfflineInDB();
                 iterator.remove();
             }

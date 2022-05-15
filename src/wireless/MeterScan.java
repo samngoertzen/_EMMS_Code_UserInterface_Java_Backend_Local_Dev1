@@ -32,6 +32,9 @@ public class MeterScan
 	private int net4_start = 1;
 	private int net4_end   = 15;
 
+	private static final int VERBOSITY = 0; // Global variable for how much output we want. 0 = none, 1 = errors only, 2 = all output.
+
+
 
 	/**
 	 * function from https://stackoverflow.com/questions/901755/how-to-get-the-ip-of-the-computer-on-linux-through-java
@@ -82,21 +85,20 @@ public class MeterScan
 	 */
 	public static String getMyIp()
 	{
-		String ip = "";
+		// String ip = "";
 
-		try 
-		{
-			// returns with a slash in front fo the ip. i.e. /153.168.1.1
-			// substring to get rid of the slash.
-			ip = getFirstNonLoopbackAddress(true, false).toString().substring(1);
-		} 
-		catch (SocketException e) 
-		{
-			e.printStackTrace();
-			ip = null;
-		}
+		// try 
+		// {
+		// 	// returns with a slash in front fo the ip. i.e. /153.168.1.1
+		// 	// substring to get rid of the slash.
+		// 	ip = getFirstNonLoopbackAddress(true, false).toString().substring(1);
+		// } 
+		// catch (SocketException e) 
+		// {
+		// 	e.printStackTrace();
+		// 	ip = null;
+		// }
 
-		// TODO
 		return "127.0.0.1";
 	}
 	
@@ -129,7 +131,6 @@ public class MeterScan
 
 			String[] ip_str = ip.split("\\."); // double backslash for regex
 			int[] ip_int = Stream.of( ip_str ).mapToInt( Integer::parseInt ).toArray();
-			System.out.println("My Current IP is: " + ip_int[0] + "." + ip_int[1] + "." + ip_int[2] + "." + ip_int[3]);
 
 			// use this host ipv4 instead of globally defined.
 			meters = scan_ip4_ranges(ip_int[0], ip_int[0], 
@@ -180,7 +181,10 @@ public class MeterScan
 			net4_start < 0 ||
 			net4_end < 0     )
 		{
-			System.out.println("Network address out of range. (less than 0)");
+			if( VERBOSITY >= 1 )
+			{
+				System.out.println("Network address out of range. (less than 0)");
+			}
 			return null;
 		}
 		else 
@@ -193,7 +197,10 @@ public class MeterScan
 			 net4_start > 255 ||
 			 net4_end > 255     )
 		{
-			System.out.println("Network address out of range. (greater than 255)");
+			if( VERBOSITY >= 1 )
+			{
+				System.out.println("Network address out of range. (greater than 255)");
+			}
 			return null;
 		}
 		// END Guard clause against addresses out of range.
@@ -204,7 +211,10 @@ public class MeterScan
 			net3_end < net3_start ||
 			net4_end < net4_start   )
 		{
-			System.out.println("Network end addresses in front of start addresses.");
+			if( VERBOSITY >= 1 )
+			{
+				System.out.println("Network end addresses in front of start addresses.");
+			}
 			return null;
 		}
 		// END Guard clause against end addresses in front of start addressses.
@@ -225,7 +235,11 @@ public class MeterScan
 					for( int d = net4_start; d <= net4_end; d++ )
 					{
 						String ip = String.format( "%s.%s.%s.%s", a, b, c, d ); // format ip from ints
-						System.out.println( "-\nScanning ip " + ip );
+
+						if( VERBOSITY >= 2 )
+						{
+							System.out.println( "-\nScanning ip " + ip );
+						}
 
 						scan_ip4( ip );
 					}
@@ -251,12 +265,19 @@ public class MeterScan
 			Meter newMeter = new Meter( ipv4 );
 			newMeter.updateDatum( InfoGET.Meter_id );
 			confirmed_meters.add( newMeter );
-			System.out.println("Added meter " + ipv4 );
+			
+			if ( VERBOSITY >= 2 )
+			{
+				System.out.println("Added meter " + ipv4 );
+			}
 			return true;
 		}
 		catch( Exception e )
 		{
-			System.out.println("Did not add " + ipv4 + " as meter.");
+			if( VERBOSITY >= 1 )
+			{
+				System.out.println("Did not add " + ipv4 + " as meter.");
+			}
 			return false;
 		}
 	}
@@ -287,7 +308,10 @@ public class MeterScan
 	{
 		if( (net1_start < 0) || (net1_start > 255) )
 		{
-			System.out.println( "Invalid net1_start value." );
+			if( VERBOSITY >= 1 )
+			{
+				System.out.println( "Invalid net1_start value." );
+			}
 			return -1;
 		}
 		else
@@ -307,7 +331,10 @@ public class MeterScan
 	{
 		if( (net1_end < 0) || (net1_end > 255) )
 		{
-			System.out.println( "Invalid net1_end value." );
+			if( VERBOSITY >= 1 )
+			{
+				System.out.println( "Invalid net1_end value." );
+			}
 			return -1;
 		}
 		else
@@ -329,7 +356,10 @@ public class MeterScan
 	{
 		if( (net2_start < 0) || (net2_start > 255) )
 		{
-			System.out.println( "Invalid net2_start value." );
+			if( VERBOSITY >= 1 )
+			{
+				System.out.println( "Invalid net2_start value." );	
+			}
 			return -1;
 		}
 		else
@@ -349,7 +379,10 @@ public class MeterScan
 	{
 		if( (net2_end < 0) || (net2_end > 255) )
 		{
-			System.out.println( "Invalid net2_end value." );
+			if( VERBOSITY >= 1 )
+			{
+				System.out.println( "Invalid net2_end value." );	
+			}
 			return -1;
 		}
 		else
@@ -371,7 +404,10 @@ public class MeterScan
 	{
 		if( (net3_start < 0) || (net3_start > 255) )
 		{
-			System.out.println( "Invalid net3_start value." );
+			if( VERBOSITY >= 1 )
+			{
+				System.out.println( "Invalid net3_start value." );	
+			}
 			return -1;
 		}
 		else
@@ -391,7 +427,10 @@ public class MeterScan
 	{
 		if( (net3_end < 0) || (net3_end > 255) )
 		{
-			System.out.println( "Invalid net3_end value." );
+			if( VERBOSITY >= 1 )
+			{
+				System.out.println( "Invalid net3_end value." );	
+			}
 			return -1;
 		}
 		else
@@ -411,7 +450,10 @@ public class MeterScan
 	{
 		if( (net4_start < 0) || (net4_start > 255) )
 		{
-			System.out.println( "Invalid net4_start value." );
+			if( VERBOSITY >= 1 )
+			{
+				System.out.println( "Invalid net4_start value." );
+			}
 			return -1;
 		}
 		else
@@ -431,7 +473,10 @@ public class MeterScan
 	{
 		if( (net4_end < 0) || (net4_end > 255) )
 		{
-			System.out.println( "Invalid net4_end value." );
+			if( VERBOSITY >= 1 )
+			{
+				System.out.println( "Invalid net4_end value." );	
+			}
 			return -1;
 		}
 		else

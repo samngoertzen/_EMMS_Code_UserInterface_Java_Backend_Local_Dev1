@@ -13,6 +13,9 @@ public class Client
 	private BufferedReader in;
 	private String timeOut = null;
 
+	private static final int VERBOSITY = 0; // Global variable for how much output we want. 0 = none, 1 = errors only, 2 = all output.
+
+
 	private final int METER_TCP_PORT = 8001;
 	private static final int TIMEOUT = 500;
 	
@@ -49,12 +52,18 @@ public class Client
 		}
 		catch ( SocketTimeoutException e0 )
 		{
-			System.out.println( "SocketTimeout" );
+			if( VERBOSITY >= 1 )
+			{
+				System.out.println( "SocketTimeout" );
+			}
 			return "";
 		}
 		catch (IOException e1) 
 		{
-			System.out.println( "IO Exception" );
+			if( VERBOSITY >= 1 )
+			{
+				System.out.println( "IO Exception" );
+			}
 			return "";
 		}
 		//// END OPEN CONNECTION ////
@@ -63,7 +72,10 @@ public class Client
 		String response = "No response";
 		try 
 		{
-			System.out.println("Attempting to send command > " + command );
+			if( VERBOSITY >= 2 )
+			{
+				System.out.println("Attempting to send command > " + command );	
+			}
 			response = sendMessage( command );
 		} 
 		catch (IOException e) 

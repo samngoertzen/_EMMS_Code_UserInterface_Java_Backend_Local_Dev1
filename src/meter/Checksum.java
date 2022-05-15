@@ -13,6 +13,8 @@ public class Checksum
     public static final String CHECKSUM_DELIMETER = "$";
     public static final String ARG_DELIMETER = ";";
 
+    private static final int VERBOSITY = 0; // Global variable for how much output we want. 0 = none, 1 = errors only, 2 = all output.
+
     /**
      * Verifies whether a string command is a valid meter command.
      * @author Bennett Andrews
@@ -30,7 +32,10 @@ public class Checksum
         // Guard clause against null commands
         if ( command.length() == 0 ) 
         {
-            System.out.println("Checksum: Null command.");
+            if( VERBOSITY >= 1 )
+            {
+                System.out.println("Checksum: Null command.");
+            }
             return false;
         }
 
@@ -38,15 +43,22 @@ public class Checksum
         // start and stop delimeters.
         if ( !command.startsWith( START_DELIMETER ) )
         {
-            System.out.println("Checksum: Invalid command syntax. '" + command + "' has no start delimeter.");
+            if( VERBOSITY >= 1 )
+            {
+                System.out.println("Checksum: Invalid command syntax. '" + command + "' has no start delimeter.");
+            }
             return false;
         }
 
         if ( !command.endsWith( STOP_DELIMETER ) )
         {
             System.out.println( (int) command.charAt( command.length() - 1) );
-            System.out.println("Checksum: Invalid command syntax. '" + command + "' has no stop delimeter.");
-            return  false;
+
+            if( VERBOSITY >= 1 )
+            {
+                System.out.println("Checksum: Invalid command syntax. '" + command + "' has no stop delimeter.");
+            }
+            return false;
         }
 
         
@@ -60,7 +72,10 @@ public class Checksum
             {
                 if( (param == null) || ( param.equals("") ) )
                 {
-                    System.out.println("Command has null parameters.");
+                    if( VERBOSITY >= 1 )
+                    {
+                        System.out.println("Command has null parameters.");
+                    }
                     return false;
                 }
             }
@@ -95,7 +110,10 @@ public class Checksum
         // Guard clause against converting a command with a checksum delimeter already present.
         if( command.indexOf( CHECKSUM_DELIMETER ) != -1 )
         {
-            System.out.println("Checksum: Already contains checksum delimeter.");
+            if( VERBOSITY >= 1 )
+            {
+                System.out.println("Checksum: Already contains checksum delimeter.");
+            }
             return null;
         }
 
@@ -183,7 +201,10 @@ public class Checksum
         // Guard clause against no checksum delimeter or too many checksum delimeters.
         if( checksum_split.length != 2 )
         {
-            System.out.println("Checksum: Incorrect number of delimeters.");
+            if( VERBOSITY >= 1 )
+            {
+                System.out.println("Checksum: Incorrect number of delimeters.");
+            }
             return false;
         }
 
@@ -200,7 +221,10 @@ public class Checksum
         }
         catch( NumberFormatException e )
         {
-            System.out.println("Checksum: Non-numeric checksum");
+            if( VERBOSITY >= 1 )
+            {
+                System.out.println("Checksum: Non-numeric checksum");
+            }
             return false;
         }
 
@@ -296,7 +320,8 @@ public class Checksum
         // System.out.println( "\nResponse to check: " + response );
         // System.out.println( isVerified(response) );
 
-        System.out.println( Arrays.deepToString( separateMultipleCommands( ("#!Set;WiFiMAC;c6:7c:80$1521*" + '\0') ) ) );
-        System.out.println( Checksum.isValidCommand( "!Set;WiFiMAC;c6:7c:80$1521*" ) );
+        // // Multiple command parsing
+        // System.out.println( Arrays.deepToString( separateMultipleCommands( ("#!Set;WiFiMAC;c6:7c:80$1521*" + '\0') ) ) );
+        // System.out.println( Checksum.isValidCommand( "!Set;WiFiMAC;c6:7c:80$1521*" ) );
     }
 }

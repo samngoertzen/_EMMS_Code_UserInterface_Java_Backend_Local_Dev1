@@ -28,6 +28,8 @@ public class dbConnection
     // add table name
 
     static final int MAX_SEND_ATTEMPTS = 1;
+
+    private static final int VERBOSITY = 0; // Global variable for how much output we want. 0 = none, 1 = errors only, 2 = all output.
     
     
 	/**
@@ -161,7 +163,10 @@ public class dbConnection
         }
         catch( Exception e )
         {
-            System.out.println("Unable to set all meters as offline.");
+            if( VERBOSITY >= 1 )
+            {
+                System.out.println("Unable to set all meters as offline.");
+            }
         }
     }
 
@@ -203,7 +208,6 @@ public class dbConnection
      public static boolean insertMeter(String Meter_id) 
      {
         String statement = "INSERT INTO Meters (Meter_id) VALUES (\"" + Meter_id + "\")";
-        System.out.println("add sql: " + statement);
 
         try 
         {
@@ -213,7 +217,10 @@ public class dbConnection
         catch (Exception e) 
         {
             // SQL failure
-            System.out.println("Meter add unsuccessful for > " + Meter_id);
+            if( VERBOSITY >= 1 )
+            {
+                System.out.println("Meter add unsuccessful for > " + Meter_id);
+            }
             return false;
         }
     }
@@ -511,73 +518,4 @@ public class dbConnection
         }
 		return resultString;
 	}
-	
-	
-	/**
-	 * Tests to see if connection can be established to configured database
-	 * @return true if connection can be established
-	 */
-	public static boolean testConnection() 
-    {
-        String DB_IP = MeterScan.getMyIp();
-
-		Connection conn = null;
-        Statement stmt = null;
-        try 
-        {
-            //STEP 2: Register JDBC driver
-            Class.forName(JDBC_DRIVER);
-
-            //STEP 3: Open a connection
-            System.out.println("Connecting to a selected database...");
-            conn = DriverManager.getConnection(
-                    "jdbc:mariadb://"+ DB_IP + ":" + DB_PORT + "/" + DATABASE, USER, PASS);
-            System.out.println("Connected database successfully...");
-        } 
-        catch (SQLException se) 
-        {
-            //Handle errors for JDBC
-            se.printStackTrace();
-            return false;
-        } 
-        catch (Exception e) 
-        {
-            //Handle errors for Class.forName
-            e.printStackTrace();
-            return false;
-        } 
-        finally 
-        {
-            //finally block used to close resources
-        	//BENNETT YOU ARE AWESOME ALSO THIS COMMENT IS FOR GITHUB TESTING DELETE MEEEE
-            try 
-            {
-                if (stmt != null) 
-                {
-                    conn.close();
-                }
-            } 
-            catch (SQLException se) 
-            {
-            	return false;
-            }// do nothing
-            try 
-            {
-                if (conn != null) 
-                {
-                    conn.close();
-                }
-            } 
-            catch (SQLException se) 
-            {
-                se.printStackTrace();
-            }//end finally try
-
-        }//end try
-
-        System.out.println("Goodbye!"); 
-		
-		return true;
-	}
-
 }
