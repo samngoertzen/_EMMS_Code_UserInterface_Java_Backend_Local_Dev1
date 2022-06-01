@@ -1,3 +1,4 @@
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 
@@ -17,7 +18,7 @@ public class Main
     private static final int  IPV4_ADDRESS_4_START = 10;
     private static final int  IPV4_ADDRESS_4_END   = 209;
 
-    private static final int VERBOSITY = 0; // Global variable for how much output we want. 0 = none, 1 = errors only, 2 = all output.
+    private static final int VERBOSITY = 2; // Global variable for how much output we want. 0 = none, 1 = errors only, 2 = all output.
 
 
     MeterScan meterScan;
@@ -120,6 +121,35 @@ public class Main
                 }
                 meter.setOfflineInDB();
                 iterator.remove();
+            }
+
+            if( VERBOSITY >= 2 )
+            {
+                System.out.println( "\n- Checking for unsent commands -\n" );
+            }
+
+            // THIS section is to early-connect meters that need to have commands
+            // pushed to them.
+            
+            String[] ids = dbConnection.getCommandMeter_ids();
+            System.out.println( Arrays.toString( ids ) );
+
+            for( int i = 0; i < ids.length; i++ )
+            {
+                if( metersConnected.containsKey( ids[i] ) )
+                {
+                    connected = metersConnected.get( ids[i] ).run();
+
+                    if( !connected )
+                    {
+                        if( VERBOSITY >= 2 )
+                        {
+                            System.out.println("Meter " + meter.id() + " offline. Removing.");
+                        }
+                        meter.setOfflineInDB();
+                        iterator.remove();
+                    }
+                }
             }
         }
     }

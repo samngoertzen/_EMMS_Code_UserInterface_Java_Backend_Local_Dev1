@@ -1,6 +1,8 @@
 package meter;
 
 import java.io.*;
+import java.sql.Date;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.HashMap;
 
@@ -22,7 +24,7 @@ public class Meter
 	// Stores all meter object data relevant to live meters.
 	HashMap<InfoGET, String> data =  new HashMap<InfoGET, String>();
 
-	private static final int VERBOSITY = 0; // Global variable for how much output we want. 0 = none, 1 = errors only, 2 = all output.
+	private static final int VERBOSITY = 2; // Global variable for how much output we want. 0 = none, 1 = errors only, 2 = all output.
 
 
 
@@ -165,13 +167,21 @@ public class Meter
 			throw new IOException("Meter is not connected.");
 		}
 
+
+		Client client = new Client();
+
+		// Sends meter time command as a test and to keep meter clocks correct.
+		if( VERBOSITY >= 2 )
+		{
+			System.out.println("\n\nUpdating time.\n\n");
+		}
+
+		parseResponse( client.communicate( ip(), createMeterDateTimeCommand() + createMeterDateTimeCommand() ) );
+
 		if( VERBOSITY >= 2 )
 		{
 			System.out.println("\n\nPushing commands.\n\n");
 		}
-
-		Client client = new Client();
-		
 
 		// Fetch all the commands for a specific meter
 		String [][] command_list = dbConnection.getCommandsForMeter( id() );
@@ -351,6 +361,32 @@ public class Meter
 		updateDatum( InfoGET.ModInfo54 );
 
 		setDatum( InfoGET.Online, "1" );
+	}
+
+	/**
+	 * Creates a fully constructed command for setting the date and time
+	 * of an energy meter. Uses the current date and time set on the raspberry
+	 * pi.
+	 * 
+	 * @author Bennett Andrews
+	 * @return Fully constructed command for setting the date/time of this meter
+	 */
+	private static String createMeterDateTimeCommand()
+	{
+		String command = "!Set;Time;";
+
+		Date date = new Date( System.currentTimeMillis() );
+		SimpleDateFormat formatter = new SimpleDateFormat( "dd-MM-yy';'HH:mm:ss" );
+
+		command += formatter.format( date ) + '*';
+		command = Checksum.convert( command );
+
+		return command;
+	}
+
+	public static void main( String[] args )
+	{
+		createMeterDateTimeCommand();
 	}
 
 	/**
