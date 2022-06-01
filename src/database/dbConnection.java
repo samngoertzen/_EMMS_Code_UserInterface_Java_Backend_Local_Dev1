@@ -81,6 +81,9 @@ public class dbConnection
         //      Test logSendAttempt
         // ---------------------------------------
         // logSendAttempt("41");
+
+
+        System.out.println( Arrays.deepToString( getCommandMeter_ids() ) );
         
 
 	}
@@ -244,6 +247,36 @@ public class dbConnection
         {
             // SQL failure
             return false;
+        }
+    }
+
+    /**
+     * Fetches the Meter_id s of all queued commands to be sent in the Action Table
+     * 
+     * @author Bennett Andrews
+     * @param Meter_id
+     * @return
+     */
+    public static String[] getCommandMeter_ids()
+    {
+        String statement = "SELECT DISTINCT Meter_id FROM Actions WHERE(Send_attempts<" + MAX_SEND_ATTEMPTS + " AND Command<>'');";
+
+        try 
+        {
+            String[][] response = sendMySQL(statement);
+            String[] ids = new String[response.length];
+
+            for( int i = 0; i < response.length; i++ )
+            {
+                ids[i] = response[i][0];
+            }
+
+            return ids;
+        } 
+        catch (Exception e) 
+        {
+            // SQL failure
+            return new String[]{"error"};
         }
     }
 
