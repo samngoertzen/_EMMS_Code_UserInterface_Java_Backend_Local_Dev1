@@ -13,7 +13,7 @@ public class Checksum
     public static final String CHECKSUM_DELIMETER = "$";
     public static final String ARG_DELIMETER = ";";
 
-    private static final int VERBOSITY = 2; // Global variable for how much output we want. 0 = none, 1 = errors only, 2 = all output.
+    private static final int VERBOSITY = 0; // Global variable for how much output we want. 0 = none, 1 = errors only, 2 = all output.
 
     /**
      * Verifies whether a string command is a valid meter command.
