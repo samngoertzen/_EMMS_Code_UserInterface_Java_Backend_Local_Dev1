@@ -424,7 +424,7 @@ public class dbConnection
 	 * @param statement - String SQL query
 	 * @return Two dimensional array of values returned from the database query.
 	 */
-	public static String[][] sendMySQL(String statement) 
+	public static String[][] sendMySQL(String statement)  
     {
         String DB_IP = MeterScan.getMyIp();
 
