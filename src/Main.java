@@ -27,7 +27,7 @@ public class Main
     private static final int LOOP_DELAY = 5000; // ensure that loops take at least this long (msec)
 
     
-    
+
     public static void main(String[] args)
     {
         Main main = new Main();
@@ -133,7 +133,10 @@ public class Main
             // pushed to them.
             
             String[] ids = dbConnection.getCommandMeter_ids();
-            System.out.println( Arrays.toString( ids ) );
+            if( VERBOSITY >= 2 )
+            {
+                System.out.println( Arrays.toString( ids ) );
+            } 
 
             for( int i = 0; i < ids.length; i++ )
             {
