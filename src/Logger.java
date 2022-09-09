@@ -5,6 +5,8 @@ public class Logger
     public static final int LOG_RUNTIME = 0B0010;
     public static final int LOG_VERBOSE = 0B0100;
 
+    // Add a comment here!
+
     private int log_level;
 
     public Logger() 
