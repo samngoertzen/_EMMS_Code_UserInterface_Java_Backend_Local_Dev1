@@ -191,6 +191,11 @@ public class Meter
 		System.out.print("Last read_command_list item: ");
 		System.out.println(read_command_list[read_command_list.length-1]);
 
+		// We need to essentially copy the following foreach loop and paste it
+		// for read_command_list as well as command_list. Not sure if there is
+		// an easier way to do it (like within a single foreach loop), but we
+		// think this method will work for now.
+
 		for ( String[] commandset : command_list ) 
 		{
 			// commandset = [action_index, meter_id, command]
