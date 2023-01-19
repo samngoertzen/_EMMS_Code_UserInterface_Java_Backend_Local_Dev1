@@ -29,7 +29,7 @@ public class dbConnection
 
     static final int MAX_SEND_ATTEMPTS = 1;
 
-    private static final int VERBOSITY = 0; // Global variable for how much output we want. 0 = none, 1 = errors only, 2 = all output.
+    private static final int VERBOSITY = 2; // Global variable for how much output we want. 0 = none, 1 = errors only, 2 = all output.
     
     
 	/**
@@ -41,8 +41,8 @@ public class dbConnection
         // ---------------------------------------
         //      Test getFrom
         // ---------------------------------------
-        // String test = getFrom(InfoGET.Meter_name, "AB:CD:EF:gH");
-        // System.out.println(test);
+        String test = getFrom(InfoGET.Meter_name, "AB:CD:EF:gH");
+        System.out.println(test);
 
         // ---------------------------------------
         //      Test setTo
@@ -443,9 +443,11 @@ public class dbConnection
             // Register JDBC driver
             Class.forName( JDBC_DRIVER );
 
+            System.out.println("The code reached before line 447");
             // Open a connection
             conn = DriverManager.getConnection(
                     "jdbc:mariadb://"+ DB_IP + ":" + DB_PORT + "/" + DATABASE, USER, PASS);
+            System.out.println("The code reached here");
 
             // Generate SQL statement object
             stmt = conn.createStatement();
