@@ -186,6 +186,10 @@ public class Meter
 		// Fetch all the commands for a specific meter
 		String [][] command_list = dbConnection.getCommandsForMeter( id() );
 
+		// Fetch all the read commands for a specific meter
+		String [][] read_command_list = dbConnection.getReadCommandsForMeter( id() );
+		System.out.print("Last read_command_list item: ");
+		System.out.println(read_command_list[read_command_list.length-1]);
 
 		for ( String[] commandset : command_list ) 
 		{
