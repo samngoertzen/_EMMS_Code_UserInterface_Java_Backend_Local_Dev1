@@ -6,6 +6,7 @@ import database.dbConnection;
 import meter.Meter;
 import wireless.MeterScan;
 
+//Hi josh
 
 public class Main 
 {
@@ -18,7 +19,7 @@ public class Main
     private static final int  IPV4_ADDRESS_4_START = 10;
     private static final int  IPV4_ADDRESS_4_END   = 209;
 
-    private static final int VERBOSITY = 0; // Global variable for how much output we want. 0 = none, 1 = errors only, 2 = all output.
+    private static final int VERBOSITY = 2; // Global variable for how much output we want. 0 = none, 1 = errors only, 2 = all output.
 
 
     MeterScan meterScan;

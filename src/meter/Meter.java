@@ -186,6 +186,15 @@ public class Meter
 		// Fetch all the commands for a specific meter
 		String [][] command_list = dbConnection.getCommandsForMeter( id() );
 
+		// Fetch all the read commands for a specific meter
+		String [][] read_command_list = dbConnection.getReadCommandsForMeter( id() );
+		System.out.print("Last read_command_list item: ");
+		System.out.println(read_command_list[read_command_list.length-1]);
+
+		// We need to essentially copy the following foreach loop and paste it
+		// for read_command_list as well as command_list. Not sure if there is
+		// an easier way to do it (like within a single foreach loop), but we
+		// think this method will work for now.
 
 		for ( String[] commandset : command_list ) 
 		{
