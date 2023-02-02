@@ -474,7 +474,7 @@ public class dbConnection
             // Open a connection
             conn = DriverManager.getConnection(
                     "jdbc:mariadb://"+ DB_IP + ":" + DB_PORT + "/" + DATABASE, USER, PASS);
-            System.out.println("The code reached here");
+            
 
             // Generate SQL statement object
             stmt = conn.createStatement();
