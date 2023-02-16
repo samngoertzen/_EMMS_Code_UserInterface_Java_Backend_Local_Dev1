@@ -32,7 +32,7 @@ public class MeterScan
 	private int net4_start = 1;
 	private int net4_end   = 15;
 
-	private static final int VERBOSITY = 0; // Global variable for how much output we want. 0 = none, 1 = errors only, 2 = all output.
+	private static final int VERBOSITY = 2; // Global variable for how much output we want. 0 = none, 1 = errors only, 2 = all output.
 
 
 
@@ -99,6 +99,7 @@ public class MeterScan
 		// 	ip = null;
 		// }
 
+		// return "192.168.1.3";
 		return "127.0.0.1";
 	}
 	
@@ -122,6 +123,10 @@ public class MeterScan
 				// returns with a slash in front fo the ip. i.e. /153.168.1.1
 				// substring to get rid of the slash.
 				ip = getFirstNonLoopbackAddress(true, false).toString().substring(1);
+				if( VERBOSITY >= 2 )
+						{
+							System.out.println( "-\nScanning ip (NonLoopBack)" + ip );
+						}
 			} 
 			catch (SocketException e) 
 			{
