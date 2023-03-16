@@ -470,7 +470,7 @@ public class dbConnection
             // Register JDBC driver
             Class.forName( JDBC_DRIVER );
 
-            System.out.println("The code reached before line 447");
+            //System.out.println("The code reached before line 447");
             // Open a connection
             conn = DriverManager.getConnection(
                     "jdbc:mariadb://"+ DB_IP + ":" + DB_PORT + "/" + DATABASE, USER, PASS);
