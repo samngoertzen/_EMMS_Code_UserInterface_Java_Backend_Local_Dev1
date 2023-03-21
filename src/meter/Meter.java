@@ -201,6 +201,7 @@ public class Meter
 		// an easier way to do it (like within a single foreach loop), but we
 		// think this method will work for now:
 
+		// Activating commands
 		for ( String[] commandset : command_list ) 
 		{
 			// commandset = [action_index, meter_id, command]
@@ -249,6 +250,56 @@ public class Meter
 				e.printStackTrace();
 			}
 		}
+
+		// Activating read_commands (copied and pasted from previous for-loop but with read_command_list)
+		// for ( String[] commandset : read_command_list ) 
+		// {
+		// 	// commandset = [action_index, meter_id, command]
+		// 	String action_index = commandset[0];
+		// 	String command = commandset[2];
+		// 	String doubled_command = command + command;
+
+		// 	String response = "";
+
+		// 	dbConnection.logSendAttempt( action_index );
+		// 	System.out.println("Read command sending is being attempted!!!!");
+
+		// 	try 
+		// 	{
+		// 		for( int i = 0; i < SEND_ATTEMPTS; i++ )
+		// 		{
+		// 			if( VERBOSITY >= 2 )
+		// 			{
+		// 				System.out.println("Sending read command " + doubled_command + " to meterid " + id() );
+		// 			}
+		// 			response = client.communicate( ip() , doubled_command );
+
+		// 			if( response != "" ) break;	// Stop resending commands if we get a response
+		// 		}
+				
+		// 		parseResponse( response );
+
+		// 		dbConnection.logSuccess(action_index);
+				
+		// 	} 
+		// 	catch( Exception e ) 
+		// 	{
+		// 		if( VERBOSITY >= 1 )
+		// 		{
+		// 			System.out.println("command send error");				
+		// 		}
+		// 	}	
+
+		// 	// Wait 300 ms then move to the next command.
+		// 	try 
+		// 	{
+		// 		Thread.sleep( 300 );
+		// 	} 
+		// 	catch( InterruptedException e ) 
+		// 	{
+		// 		e.printStackTrace();
+		// 	}
+		// }
 
 		client.close();
 	}
