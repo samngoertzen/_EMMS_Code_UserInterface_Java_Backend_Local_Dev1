@@ -309,32 +309,32 @@ public class dbConnection
         }
     }
 
-    // /**
-    //  * Fetches all the read commands queued to be sent to a specified meter. Return is
-    //  * formatted in an array of the form String[row][column]. <p>
-    //  * 
-    //  * Column return order:<p>
-    //  * [Action index, Meter id, Command]
-    //  * 
-    //  * 
-    //  * @author Sam Goertzen, Bennett Andrews
-    //  * @param Meter_id {@code String} - Meter identifier
-    //  * @return Two dimensional array of values returned from the database query.
-    //  */
-    // public static String[][] getReadCommandsForMeter(String Meter_id) {
-    //     String statement = "SELECT i, Meter_id, Read_command FROM Actions WHERE(Meter_id='" + Meter_id + "' AND Send_attempts<" + MAX_SEND_ATTEMPTS + " AND Read_command<>'');";
+    /**
+     * Fetches all the read commands queued to be sent to a specified meter. Return is
+     * formatted in an array of the form String[row][column]. <p>
+     * 
+     * Column return order:<p>
+     * [Action index, Meter id, Command]
+     * 
+     * 
+     * @author Sam Goertzen, Bennett Andrews
+     * @param Meter_id {@code String} - Meter identifier
+     * @return Two dimensional array of values returned from the database query.
+     */
+    public static String[][] getReadCommandsForMeter(String Meter_id) {
+        String statement = "SELECT i, Meter_id, Read_command FROM Actions WHERE(Meter_id='" + Meter_id + "' AND Send_attempts<" + MAX_SEND_ATTEMPTS + " AND Read_command<>'');";
 
-    //     try 
-    //     {
-    //         String[][] response = sendMySQL(statement);
-    //         return response;
-    //     } 
-    //     catch (Exception e) 
-    //     {
-    //         // SQL failure
-    //         return new String[][]{{"error"}};
-    //     }
-    // }
+        try 
+        {
+            String[][] response = sendMySQL(statement);
+            return response;
+        } 
+        catch (Exception e) 
+        {
+            // SQL failure
+            return new String[][]{{"error"}};
+        }
+    }
 
     /**
      * Fetches all meter IPs of meters that are flagged online in the database.
