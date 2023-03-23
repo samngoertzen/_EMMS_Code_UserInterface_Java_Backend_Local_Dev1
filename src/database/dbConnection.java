@@ -290,12 +290,12 @@ public class dbConnection
      * [Action index, Meter id, Command]
      * 
      * 
-     * @author Bennett Andrews
+     * @author Bennett Andrews, Sam Goertzen
      * @param Meter_id {@code String} - Meter identifier
      * @return Two dimensional array of values returned from the database query.
      */
     public static String[][] getCommandsForMeter(String Meter_id) {
-        String statement = "SELECT i, Meter_id, Command FROM Actions WHERE(Meter_id='" + Meter_id + "' AND Send_attempts<" + MAX_SEND_ATTEMPTS + " AND Command<>'');";
+        String statement = "SELECT i, Meter_id, Command FROM Actions WHERE(Meter_id='" + Meter_id + "' AND Send_attempts<" + MAX_SEND_ATTEMPTS + " AND Command<>'' AND Read_command<>'');";
 
         try 
         {
