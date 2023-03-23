@@ -169,18 +169,15 @@ public class Meter {
 		// UNCOMMENT //
 		////////////////////////////////////////////////////
 
-		// Fetch all the read commands for a specific meter:
-		// String [][] read_command_list = dbConnection.getReadCommandsForMeter( id() );
+		// TODO:
+		// Check out sendMySQL function (on dbConnection.java) to see if the issue is there.
+		// Right now, we get an out of bounds, meaning there is no [0][3] item in command_list.
+		// Maybe talk to Tom on Monday about this section...
 		System.out.println("\n\nLast command_list item: \n\n");
 		if (command_list.length > 0) {
 			System.out.println(command_list[0][3]);
 		}
 		System.out.println("\n\n");
-
-		// We need to essentially copy the following foreach loop and paste it
-		// for read_command_list as well as command_list. Not sure if there is
-		// an easier way to do it (like within a single foreach loop), but we
-		// think this method will work for now:
 
 		// Activating commands
 		for (String[] commandset : command_list) {
@@ -259,58 +256,6 @@ public class Meter {
 				e.printStackTrace();
 			}
 		}
-
-		// Activating read_commands (copied and pasted from previous for-loop but with
-		// read_command_list)
-		// for ( String[] commandset : read_command_list )
-		// {
-		// // commandset = [action_index, meter_id, command]
-		// String action_index = commandset[0];
-		// String command = commandset[2];
-		// String doubled_command = command + command;
-
-		// String response = "";
-
-		// dbConnection.logSendAttempt( action_index );
-		// System.out.println("Read command sending is being attempted!!!!");
-
-		// try
-		// {
-		// for( int i = 0; i < SEND_ATTEMPTS; i++ )
-		// {
-		// if( VERBOSITY >= 2 )
-		// {
-		// System.out.println("Sending read command " + doubled_command + " to meterid "
-		// + id() );
-		// }
-		// response = client.communicate( ip() , doubled_command );
-
-		// if( response != "" ) break; // Stop resending commands if we get a response
-		// }
-
-		// parseResponse( response );
-
-		// dbConnection.logSuccess(action_index);
-
-		// }
-		// catch( Exception e )
-		// {
-		// if( VERBOSITY >= 1 )
-		// {
-		// System.out.println("command send error");
-		// }
-		// }
-
-		// // Wait 300 ms then move to the next command.
-		// try
-		// {
-		// Thread.sleep( 300 );
-		// }
-		// catch( InterruptedException e )
-		// {
-		// e.printStackTrace();
-		// }
-		// }
 
 		client.close();
 	}
