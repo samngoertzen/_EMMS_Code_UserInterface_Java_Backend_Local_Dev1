@@ -295,7 +295,7 @@ public class dbConnection
      * @return Two dimensional array of values returned from the database query.
      */
     public static String[][] getCommandsForMeter(String Meter_id) {
-        String statement = "SELECT i, Meter_id, Command FROM Actions WHERE(Meter_id='" + Meter_id + "' AND Send_attempts<" + MAX_SEND_ATTEMPTS + " AND Command<>'' AND Read_command<>'');";
+        String statement = "SELECT i, Meter_id, Command FROM Actions WHERE(Meter_id='" + Meter_id + "' AND Send_attempts<" + MAX_SEND_ATTEMPTS + " AND Command<>'');";
 
         try 
         {
@@ -483,9 +483,8 @@ public class dbConnection
             rs = stmt.executeQuery(statement);
 
             // Get the number of columns using the ResultSetMetaData object
-            // ResultSetMetaData rsmd = rs.getMetaData();
-            // columnsNumber = rsmd.getColumnCount();
-            columnsNumber = 4;
+            ResultSetMetaData rsmd = rs.getMetaData();
+            columnsNumber = rsmd.getColumnCount();
             
             // Get the number of rows by setting the cursor to the last row,
             // returning the row number, then setting the cursor back to 
