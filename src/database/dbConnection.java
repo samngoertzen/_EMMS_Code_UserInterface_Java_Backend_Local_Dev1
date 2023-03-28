@@ -483,8 +483,9 @@ public class dbConnection
             rs = stmt.executeQuery(statement);
 
             // Get the number of columns using the ResultSetMetaData object
-            ResultSetMetaData rsmd = rs.getMetaData();
-            columnsNumber = rsmd.getColumnCount();
+            // ResultSetMetaData rsmd = rs.getMetaData();
+            // columnsNumber = rsmd.getColumnCount();
+            columnsNumber = 4;
             
             // Get the number of rows by setting the cursor to the last row,
             // returning the row number, then setting the cursor back to 
