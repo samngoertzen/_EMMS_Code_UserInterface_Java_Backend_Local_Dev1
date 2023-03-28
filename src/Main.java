@@ -16,8 +16,8 @@ public class Main
     private static final int  IPV4_ADDRESS_2_END   = 168;
     private static final int  IPV4_ADDRESS_3_START = 1;
     private static final int  IPV4_ADDRESS_3_END   = 1;
-    private static final int  IPV4_ADDRESS_4_START = 1;
-    private static final int  IPV4_ADDRESS_4_END   = 11;
+    private static final int  IPV4_ADDRESS_4_START = 10;
+    private static final int  IPV4_ADDRESS_4_END   = 15;
     //Should change above back to 206 for final version
 
     private static final int VERBOSITY = 1; // Global variable for how much output we want. 0 = none, 1 = errors only, 2 = all output.
