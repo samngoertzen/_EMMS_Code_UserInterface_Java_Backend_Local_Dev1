@@ -217,6 +217,8 @@ public class Meter {
 				}
 			}
 
+			response = "";
+
 			// Wait 300 ms then move to the next command.
 			try {
 				Thread.sleep(300);
