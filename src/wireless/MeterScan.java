@@ -29,7 +29,7 @@ public class MeterScan
 	private int net2_end   = 168;
 	private int net3_start = 1;
 	private int net3_end   = 1;
-	private int net4_start = 1;
+	private int net4_start = 10;
 	private int net4_end   = 15;
 
 	private static final int VERBOSITY = 2; // Global variable for how much output we want. 0 = none, 1 = errors only, 2 = all output.
