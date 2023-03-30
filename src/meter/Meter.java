@@ -175,7 +175,7 @@ public class Meter {
 		// Maybe talk to Tom on Monday about this section...
 		System.out.println("\n\nLast command_list item: \n\n");
 		if (command_list.length > 0) {
-			System.out.println(command_list[0][2]);
+			System.out.println(command_list[0][3]);
 		}
 		System.out.println("\n\n");
 
