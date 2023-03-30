@@ -295,7 +295,7 @@ public class dbConnection
      * @return Two dimensional array of values returned from the database query.
      */
     public static String[][] getCommandsForMeter(String Meter_id) {
-        String statement = "SELECT i, Meter_id, Command FROM Actions WHERE(Meter_id='" + Meter_id + "' AND Send_attempts<" + MAX_SEND_ATTEMPTS + " AND Command<>'');";
+        String statement = "SELECT i, Meter_id, Command, Read_command FROM Actions WHERE(Meter_id='" + Meter_id + "' AND Send_attempts<" + MAX_SEND_ATTEMPTS + " AND Command<> AND Read_command<>'');";
 
         try 
         {
