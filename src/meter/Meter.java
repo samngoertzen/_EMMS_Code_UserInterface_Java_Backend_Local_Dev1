@@ -181,12 +181,18 @@ public class Meter {
 
 		// Activating commands
 		for (String[] commandset : command_list) {
-			// commandset = [action_index, meter_id, command]
+			// commandset = [action_index, meter_id, command, read_command]
 			String action_index = commandset[0];
 			String command = commandset[2];
-			// String read_command = commandset[3];
+			String read_command = commandset[3];
 			String doubled_command = command + command;
-			// String doubled_read_command = read_command + read_command;
+			// Print read_command
+			System.out.print("Read_command: ");
+			System.out.println(read_command);
+			String doubled_read_command = read_command + read_command;
+			// Print read_command
+			System.out.print("Doubled_read_command: ");
+			System.out.println(doubled_read_command);
 			String response = "";
 
 			dbConnection.logSendAttempt(action_index);
@@ -227,37 +233,37 @@ public class Meter {
 				e.printStackTrace();
 			}
 
-		// 	try {
-		// 		for (int i = 0; i < SEND_ATTEMPTS; i++) {
-		// 			if (VERBOSITY >= 2) {
-		// 				System.out.println("Sending read command " + doubled_read_command + " to meterid " + id());
-		// 			}
-		// 			response = client.communicate(ip(), doubled_read_command);
+			try {
+				for (int i = 0; i < SEND_ATTEMPTS; i++) {
+					if (VERBOSITY >= 2) {
+						System.out.println("Sending read command " + doubled_read_command + " to meterid " + id());
+					}
+					response = client.communicate(ip(), doubled_read_command);
 
-		// 			if (response != "") {
-		// 				if (VERBOSITY >= 2) {
-		// 					System.out.println("Recieve response");
-		// 				}
-		// 				break; // Stop resending commands if we get a response
-		// 			}
-		// 		}
+					if (response != "") {
+						if (VERBOSITY >= 2) {
+							System.out.println("Recieve response");
+						}
+						break; // Stop resending commands if we get a response
+					}
+				}
 
-		// 		//parseResponse(response);
+				//parseResponse(response);
 
-		// 		//dbConnection.logSuccess(action_index);
+				//dbConnection.logSuccess(action_index);
 
-		// 	} catch (Exception e) {
-		// 		if (VERBOSITY >= 1) {
-		// 			System.out.println("read command send error");
-		// 		}
-		// 	}
+			} catch (Exception e) {
+				if (VERBOSITY >= 1) {
+					System.out.println("read command send error");
+				}
+			}
 
-		// 	// Wait 300 ms then move to the next command.
-		// 	try {
-		// 		Thread.sleep(300);
-		// 	} catch (InterruptedException e) {
-		// 		e.printStackTrace();
-		// 	}
+			// Wait 300 ms then move to the next command.
+			try {
+				Thread.sleep(300);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
 		}
 
 		client.close();
