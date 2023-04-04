@@ -165,20 +165,6 @@ public class Meter {
 		// Fetch all the commands for a specific meter
 		String[][] command_list = dbConnection.getCommandsForMeter(id());
 
-		////////////////////////////////////////////////////
-		// UNCOMMENT //
-		////////////////////////////////////////////////////
-
-		// TODO:
-		// Check out sendMySQL function (on dbConnection.java) to see if the issue is there.
-		// Right now, we get an out of bounds, meaning there is no [0][3] item in command_list.
-		// Maybe talk to Tom on Monday about this section...
-		System.out.println("\n\nLast command_list item: \n\n");
-		if (command_list.length > 0) {
-			System.out.println(command_list[0][3]);
-		}
-		System.out.println("\n\n");
-
 		// Activating commands
 		for (String[] commandset : command_list) {
 			// commandset = [action_index, meter_id, command, read_command]
@@ -186,18 +172,18 @@ public class Meter {
 			String command = commandset[2];
 			String read_command = commandset[3];
 			String doubled_command = command + command;
-			// Print read_command
-			System.out.print("Read_command: ");
-			System.out.println(read_command);
 			String doubled_read_command = read_command + read_command;
-			// Print read_command
-			System.out.print("Doubled_read_command: ");
-			System.out.println(doubled_read_command);
+			if (VERBOSITY >= 2) {
+				// Print read_command
+				System.out.print("Doubled_read_command: ");
+				System.out.println(doubled_read_command);
+			}
 			String response = "";
 
 			dbConnection.logSendAttempt(action_index);
 			System.out.println("Sending is being attempted!!!!");
 
+			// Try to send doubled_command for SEND_ATTEMPTS amount of tries
 			try {
 				for (int i = 0; i < SEND_ATTEMPTS; i++) {
 					if (VERBOSITY >= 2) {
@@ -207,7 +193,7 @@ public class Meter {
 
 					if (response != "") {
 						if (VERBOSITY >= 2) {
-							System.out.println("Recieve response");
+							System.out.println("Receive response");
 						}
 						break; // Stop resending commands if we get a response
 					}
@@ -233,6 +219,7 @@ public class Meter {
 				e.printStackTrace();
 			}
 
+			// Try to send doubled_read_command for SEND_ATTEMPTS amount of tries
 			try {
 				for (int i = 0; i < SEND_ATTEMPTS; i++) {
 					if (VERBOSITY >= 2) {
@@ -244,13 +231,9 @@ public class Meter {
 						if (VERBOSITY >= 2) {
 							System.out.println("Recieve response");
 						}
-						break; // Stop resending commands if we get a response
+						break; // Stop resending read commands if we get a response
 					}
 				}
-
-				//parseResponse(response);
-
-				//dbConnection.logSuccess(action_index);
 
 			} catch (Exception e) {
 				if (VERBOSITY >= 1) {
